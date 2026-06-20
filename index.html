@@ -122,31 +122,20 @@
 
         <div id="controls">
             <div class="controls-header">
-                <div>What will <strong id="ui-name-p1">Izanagi</strong> do? <span style="background:#222; padding:2px 4px; border-radius:2px; margin-left:5px;">HP <span id="ui-hp-num">150/150</span></span></div>
+                <div>What will <strong id="ui-name-p1">...</strong> do? <span style="background:#222; padding:2px 4px; border-radius:2px; margin-left:5px;">HP <span id="ui-hp-num">.../...</span></span></div>
                 <button class="timer-btn">⏳ 2:30</button>
             </div>
 
             <h3>Attack</h3>
             <div class="moves-grid">
-                <button class="move-btn" onclick="enviarAccion('Zio', 'Electric')">
-                    Zio <span class="move-type" style="color: #cccc00;">Electric</span> <span class="move-sp">4 SP</span>
-                </button>
-                <button class="move-btn" onclick="enviarAccion('Cleave', 'Physical')">
-                    Cleave <span class="move-type" style="color: #cc8888;">Physical</span> <span class="move-sp">10% HP</span>
-                </button>
-                <button class="move-btn" onclick="enviarAccion('Rakunda', 'Support')">
-                    Rakunda <span class="move-type" style="color: #8888cc;">Support</span> <span class="move-sp">8 SP</span>
-                </button>
-                <button class="move-btn" onclick="enviarAccion('Tarukaja', 'Support')">
-                    Tarukaja <span class="move-type" style="color: #8888cc;">Support</span> <span class="move-sp">8 SP</span>
-                </button>
+                <div style="color: #888; padding: 10px;">Cargando movimientos...</div>
             </div>
 
             <h3 class="switch-title">Switch</h3>
             <div class="switch-row">
-                <button class="switch-btn">⚔️ Izanagi</button>
-                <button class="switch-btn">🔥 Jack Frost</button>
-                <button class="switch-btn">💨 Pixie</button>
+                <button class="switch-btn">⚔️ Principal</button>
+                <button class="switch-btn" style="opacity: 0.5;">🔥 Persona 2</button>
+                <button class="switch-btn" style="opacity: 0.5;">💨 Persona 3</button>
             </div>
         </div>
 
@@ -178,7 +167,9 @@
         const SERVER_URL = 'wss://persona-showdown-production.up.railway.app';
         const ws = new WebSocket(SERVER_URL);
 
-        // Función para prender/apagar botones (Ataques y Cambios)
+        let miRol = null; // Guardará si somos 'p1' o 'p2'
+
+        // Prender/apagar botones (Ataques y Cambios)
         function habilitarControles(habilitar) {
             const botones = document.querySelectorAll('.move-btn, .switch-btn');
             botones.forEach(btn => {
@@ -186,63 +177,99 @@
             });
         }
 
-        // Empezamos con los botones apagados hasta que el servidor diga "PLAYING"
+        // Empezamos con los controles apagados hasta conectar
         habilitarControles(false);
 
         function escribirLog(mensaje) {
             const log = document.getElementById("log-content");
             log.innerHTML += `<div>${mensaje}</div>`;
-            log.scrollTop = log.scrollHeight; // Auto scroll hacia abajo
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Asignar colores según el tipo elemental
+        function getColorTipo(tipo) {
+            switch(tipo) {
+                case 'Electric': return '#cccc00';
+                case 'Wind': return '#88cc88';
+                case 'Physical': return '#cc8888';
+                case 'Support': return '#8888cc';
+                default: return '#aaaaaa';
+            }
+        }
+
+        // CREAR los botones basándose en lo que dice el servidor
+        function renderizarAtaques(moves) {
+            const grid = document.querySelector('.moves-grid');
+            grid.innerHTML = ''; // Borra el texto de "Cargando movimientos..."
+
+            moves.forEach(move => {
+                const color = getColorTipo(move.type);
+                const btnHTML = `
+                    <button class="move-btn" onclick="enviarAccion('${move.name}', '${move.type}')">
+                        ${move.name} <span class="move-type" style="color: ${color};">${move.type}</span> <span class="move-sp">${move.sp}</span>
+                    </button>
+                `;
+                grid.innerHTML += btnHTML;
+            });
         }
 
         function dibujarBarras(state) {
-            // Controlar botones basado en el estado del servidor
             if (state.status === 'WAITING') {
                 habilitarControles(false);
             } else if (state.status === 'PLAYING') {
                 habilitarControles(true);
             }
 
-            // Dibujar Jugador 1
+            // Cambiamos la interfaz según mi rol (P1 = Izanagi, P2 = Jiraiya)
+            if (miRol) {
+                document.getElementById("ui-name-p1").innerText = state[miRol].name;
+                document.getElementById("ui-hp-num").innerText = `${state[miRol].hp}/${state[miRol].hpMax}`;
+                renderizarAtaques(state[miRol].moves);
+            }
+
+            // Dibujar barras de vida (P1)
             let pct1 = (state.p1.hp / state.p1.hpMax) * 100;
             document.getElementById("bar-p1").style.width = pct1 + "%";
             document.getElementById("porcentaje-p1").innerText = Math.ceil(pct1) + "%";
-            document.getElementById("ui-hp-num").innerText = `${state.p1.hp}/${state.p1.hpMax}`;
             document.getElementById("bar-p1").style.background = pct1 < 25 ? "#ff4444" : (pct1 < 50 ? "#ffdd55" : "#48c774");
 
-            // Dibujar Oponente
+            // Dibujar barras de vida (P2)
             let pct2 = (state.p2.hp / state.p2.hpMax) * 100;
             document.getElementById("bar-opp").style.width = pct2 + "%";
             document.getElementById("porcentaje-opp").innerText = Math.ceil(pct2) + "%";
             document.getElementById("bar-opp").style.background = pct2 < 25 ? "#ff4444" : (pct2 < 50 ? "#ffdd55" : "#48c774");
 
-            // Actualizar número de turno
             document.getElementById("ui-turn").innerText = state.turnCount;
+            
+            // Bloqueamos/Desbloqueamos los nuevos botones creados para respetar el estado de la sala
+            habilitarControles(state.status === 'PLAYING'); 
         }
 
         // Escuchamos los mensajes que manda Node.js
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             
-            if (data.type === 'BATTLE_LOG') {
+            if (data.type === 'INIT') {
+                document.getElementById('status-message').innerHTML = data.message;
+                miRol = data.role; // Aquí el servidor nos bautiza como 'p1' o 'p2'
+            }
+            else if (data.type === 'BATTLE_LOG') {
                 escribirLog(data.message);
             } 
             else if (data.type === 'UPDATE_STATE') {
                 dibujarBarras(data.state);
             }
-            else if (data.type === 'INIT' || data.type === 'FULL') {
+            else if (data.type === 'FULL') {
                 document.getElementById('status-message').innerHTML = data.message;
             }
         };
 
-        // Al hacer click en un ataque
         function enviarAccion(nombreAtaque, tipoAtaque) {
             if(ws.readyState === WebSocket.OPEN) {
                 const action = { type: 'ACTION', skill: nombreAtaque, skillType: tipoAtaque };
                 ws.send(JSON.stringify(action));
                 
-                // Apagamos los botones para no hacer trampa o doble click, 
-                // esperamos a que el oponente juegue.
+                // Apagamos botones al instante para esperar al oponente
                 habilitarControles(false);
             } else {
                 escribirLog(`<span style="color: red;">Error: Desconectado del servidor.</span>`);
@@ -256,7 +283,7 @@
                 if(ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({ type: 'CHAT', text: this.value }));
                 }
-                this.value = ''; // Limpiar la caja de texto
+                this.value = ''; 
             }
         });
     </script>
