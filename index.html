@@ -4,15 +4,11 @@
     <meta charset="UTF-8">
     <title>Persona Showdown</title>
     <style>
-        /* =========================================
-           RESET Y ESTILOS GLOBALES SHOWDOWN
-           ========================================= */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { 
             font-family: Verdana, Helvetica, Arial, sans-serif; 
             font-size: 10pt;
             background-color: #111; 
-            background-image: url(''); 
             background-size: cover;
             background-position: center;
             color: #eee; 
@@ -34,123 +30,57 @@
             font-size: 10pt;
             padding: 4px 10px;
         }
-        .ps-button:hover:not(:disabled) {
-            background: linear-gradient(to bottom, #fff, #f0f0f0);
-            border-color: #999;
-        }
-        .ps-button:disabled {
-            background: #ddd; color: #888; text-shadow: none; cursor: not-allowed; border-color: #bbb;
-        }
+        .ps-button:hover:not(:disabled) { background: linear-gradient(to bottom, #fff, #f0f0f0); border-color: #999; }
+        .ps-button:disabled { background: #ddd; color: #888; text-shadow: none; cursor: not-allowed; border-color: #bbb; }
 
-        /* =========================================
-           TOP BAR (PESTAÑAS)
-           ========================================= */
+        /* --- PESTAÑAS (Top Bar) --- */
         #top-bar { 
             height: 35px; background: rgba(0, 0, 0, 0.6); display: flex; align-items: flex-end; 
-            padding: 0 10px; border-bottom: 1px solid #444; flex-shrink: 0;
-            justify-content: space-between;
+            padding: 0 10px; border-bottom: 1px solid #444; flex-shrink: 0; justify-content: space-between;
         }
-        
         .tabs-container { display: flex; gap: 2px; }
-        
         .tab-btn {
             background: rgba(30, 30, 30, 0.8); color: #aaa; border: 1px solid #111; border-bottom: none;
             padding: 6px 14px; border-radius: 4px 4px 0 0; cursor: pointer;
-            font-size: 13px; transition: background 0.2s, color 0.2s;
-            height: 28px;
+            font-size: 13px; transition: background 0.2s, color 0.2s; height: 28px;
         }
-        
-        .tab-btn:hover { background: rgba(50, 50, 50, 0.9); color: #fff; }
         .tab-btn.active { background: rgba(0, 0, 0, 0.5); color: #fff; height: 30px; font-weight: bold; border: 1px solid #555; border-bottom: none; }
 
-        .user-info { color: #88aadd; font-size: 13px; padding-bottom: 6px; font-weight: bold; }
-
-        /* =========================================
-           CONTENEDOR PRINCIPAL
-           ========================================= */
         #main-content { flex-grow: 1; position: relative; width: 100vw; background: rgba(0, 0, 0, 0.3); }
         .pantalla { display: none !important; height: 100%; width: 100%; }
         .pantalla.active { display: flex !important; }
 
-        /* =========================================
-           PANTALLA DE INICIO
-           ========================================= */
+        /* --- PANTALLA INICIO --- */
         #pantalla-inicio { padding: 20px; gap: 20px; justify-content: center; overflow-y: auto; }
+        #home-left { width: 250px; display: flex; flex-direction: column; gap: 15px; }
+        #home-mid { width: 300px; display: flex; flex-direction: column; gap: 15px; }
+        #home-right { width: 400px; background: rgba(10, 10, 10, 0.8); border: 1px solid #333; border-radius: 4px; display: flex; flex-direction: column; }
 
-        .home-col { display: flex; flex-direction: column; gap: 15px; }
-        #home-left { width: 250px; }
-        #home-mid { width: 300px; }
-        #home-right { width: 400px; background: rgba(10, 10, 10, 0.8); border: 1px solid #333; border-radius: 4px; display: flex; }
-
-        .matchmaking-box { display: flex; flex-direction: column; gap: 10px; }
-        .ps-select-group label { display: block; font-size: 11px; color: #bbb; margin-bottom: 2px; font-weight: bold;}
-        .ps-select-group select { width: 100%; padding: 4px; background: #ddd; color: #222; border: 1px solid #888; border-radius: 3px; font-family: Verdana; }
-        
-        .big-battle-btn { width: 100%; padding: 12px 5px; font-size: 18px; font-weight: bold; margin: 10px 0; text-align: center; line-height: 1.2;}
-        .big-battle-btn small { font-size: 10px; font-weight: normal; color: #555; }
+        .big-battle-btn { width: 100%; padding: 12px 5px; font-size: 18px; font-weight: bold; margin: 10px 0; }
         .menu-btn { width: 100%; padding: 6px; text-align: center; font-weight: bold; color: #444; }
 
-        .news-box { background: rgba(60, 60, 40, 0.8); border: 1px solid #886; border-radius: 3px; color: #ddd; }
-        .news-header { background: rgba(0, 0, 0, 0.3); padding: 5px 10px; font-weight: bold; border-bottom: 1px solid #886; font-size: 11px;}
-        .news-content { padding: 10px; font-size: 12px; line-height: 1.4; }
-        .news-content h4 { color: #fff; margin-bottom: 5px; font-size: 13px;}
-
         #lobby-header { padding: 8px 10px; background: rgba(0,0,0,0.5); border-bottom: 1px solid #222; color: #fff; font-size: 14px; font-weight: bold; }
-        #lobby-chat-content { flex-grow: 1; padding: 10px; overflow-y: auto; font-size: 13px; line-height: 1.4; color: #ccc; height: 300px; }
+        #lobby-chat-content { flex-grow: 1; padding: 10px; overflow-y: auto; font-size: 13px; line-height: 1.4; color: #ccc; }
         #lobby-input { padding: 5px; background: rgba(0,0,0,0.5); border-top: 1px solid #222; display: flex; }
         #lobby-input input { flex-grow: 1; background: #fff; border: 1px solid #aaa; color: #222; padding: 5px; border-radius: 3px; font-family: Verdana; }
 
-        /* =========================================
-           PANTALLA DE TEAMBUILDER
-           ========================================= */
-        #pantalla-teambuilder { background: rgba(30,30,30,0.9); flex-direction: column; padding: 20px; }
-        .tb-header { border-bottom: 1px solid #444; padding-bottom: 10px; margin-bottom: 20px; }
-        
-        /* =========================================
-           PANTALLA DE BATALLA
-           ========================================= */
+        /* --- PANTALLA BATALLA (Reciclada de tu diseño) --- */
+        #pantalla-batalla { display: none; height: 100%; width: 100%; }
         #left-pane { flex: 6; display: flex; flex-direction: column; background: #222; border-right: 1px solid #111; }
         #right-pane { flex: 4; display: flex; flex-direction: column; background: rgba(20,20,20,0.9); }
-
-        #arena { flex: 6; position: relative; background-color: #8fb88b; background-image: url('https://placehold.co/800x400/8fb88b/8fb88b?text='); background-size: cover; border-bottom: 1px solid #111; }
-        .turn-box { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.7); color: #333; padding: 2px 8px; border: 1px solid #999; border-radius: 4px; font-weight: bold; font-size: 14px; z-index: 20;}
-
+        #arena { flex: 6; position: relative; background-color: #8fb88b; background-size: cover; border-bottom: 1px solid #111; }
         .battler { position: absolute; display: flex; flex-direction: column; align-items: center; }
         #player-side { bottom: 10px; left: 15%; } 
         #opponent-side { top: 20px; right: 20%; }
         .sprite { width: 260px; height: 260px; object-fit: contain; }
         #sprite-p1 { transform: scaleX(-1); } 
-        
         .hp-box { background: rgba(0, 0, 0, 0.75); padding: 4px 8px; border-radius: 4px; font-size: 11px; z-index: 10; text-align: right; width: 200px; border: 1px solid #333;}
         #player-side .hp-box { margin-bottom: -20px; text-align: left;} 
         #opponent-side .hp-box { margin-bottom: -15px; }
-        .hp-box span { font-weight: bold; float: left; color: #fff;}
-        .hp-bar-bg { background: #555; height: 6px; width: 100%; margin-top: 4px; border-radius: 3px; overflow: hidden; border: 1px solid #111;}
         .hp-bar-fill { background: #48c774; height: 100%; width: 100%; transition: width 0.3s; }
-
         #controls { flex: 4; background: #dedede; padding: 10px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #fff;}
-        .controls-header { display: flex; justify-content: space-between; font-size: 12px; color: #333; }
-        .controls-header strong { color: #000; }
-        .timer-btn { background: #885555; color: white; border: 1px solid #aa6666; padding: 2px 10px; border-radius: 3px; cursor: pointer; font-size: 11px;}
-
         .moves-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 5px; }
-        .move-btn { background: linear-gradient(to bottom, #f9f9f9, #e5e5e5); border: 1px solid #aaa; border-radius: 3px; padding: 8px; cursor: pointer; text-align: center; color: #333; position: relative; font-weight: bold; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
-        .move-btn:hover:not(:disabled) { background: linear-gradient(to bottom, #fff, #f0f0f0); }
-        .move-type { position: absolute; bottom: 4px; left: 8px; font-size: 9px; font-weight: normal; color: #666; text-transform: uppercase;}
-        .move-sp { position: absolute; bottom: 4px; right: 8px; font-size: 9px; font-weight: normal; color: #666;}
-        
-        .switch-title { font-size: 12px; color: #555; margin-bottom: 2px;}
-        .switch-row { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px;}
-        .switch-btn { background: linear-gradient(to bottom, #f9f9f9, #e5e5e5); border: 1px solid #aaa; border-radius: 3px; padding: 4px 10px; cursor: pointer; font-size: 11px; color: #333; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
-        .switch-btn:hover:not(:disabled) { background: linear-gradient(to bottom, #fff, #f0f0f0); }
-
-        #log-header { padding: 8px; background: #222; border-bottom: 1px solid #111; text-align: right; }
-        #log-header button { background: #444; color: #eee; border: 1px solid #666; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 11px; }
-        #log-content { flex-grow: 1; padding: 15px; overflow-y: auto; font-size: 13px; line-height: 1.4; color: #ccc; }
-        .log-turn { font-size: 15px; font-weight: bold; color: #fff; margin: 15px 0 5px 0; border-bottom: 1px solid #444; padding-bottom: 2px;}
-        .log-damage { color: #ff8888; }
-        #chat-input { padding: 5px; background: #222; border-top: 1px solid #111; display: flex;}
-        #chat-input input { flex-grow: 1; background: #fff; border: 1px solid #aaa; color: #222; padding: 5px; border-radius: 3px; font-family: Verdana;}
+        .move-btn { background: linear-gradient(to bottom, #f9f9f9, #e5e5e5); border: 1px solid #aaa; border-radius: 3px; padding: 8px; cursor: pointer; text-align: center; color: #333; position: relative; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -161,237 +91,68 @@
             <button class="tab-btn" id="tab-btn-teambuilder" onclick="cambiarTab('teambuilder')">Teambuilder</button>
             <button class="tab-btn" id="tab-btn-batalla" onclick="cambiarTab('batalla')" style="display: none; color: #ffaa99;">Battle</button>
         </div>
-        <div class="user-info">
-            <span id="username-display">Guest</span>
-        </div>
+        <div class="user-info">Guest</div>
     </div>
 
     <div id="main-content">
-        
         <div id="pantalla-inicio" class="pantalla active">
             <div id="home-left" class="home-col">
-                <div class="logo-container" style="text-align: left; margin-bottom: 10px;">
-                    <img src="https://play.pokemonshowdown.com/pokemonshowdownbeta.png" alt="Logo" style="max-width: 100%; opacity: 0.8; filter: grayscale(100%);">
-                </div>
                 <div class="matchmaking-box">
-                    <div class="ps-select-group">
-                        <label>Format:</label>
-                        <select disabled><option>[Gen 5 Persona] OU</option></select>
-                    </div>
-                    <div class="ps-select-group">
-                        <label>Team:</label>
-                        <select disabled><option>Random team</option></select>
-                    </div>
-                    <label style="font-size: 11px; margin-top: 5px;"><input type="checkbox" disabled> Don't allow spectators</label>
-                    <button id="btn-find-battle" class="ps-button big-battle-btn">
-                        Battle!<br>
-                        <small>Find a random opponent</small>
-                    </button>
+                    <button id="btn-find-battle" class="ps-button big-battle-btn">Battle!</button>
                     <button class="ps-button menu-btn" onclick="cambiarTab('teambuilder')">Teambuilder</button>
-                    <button class="ps-button menu-btn" disabled>Ladder</button>
-                    <button class="ps-button menu-btn" disabled>Tournaments</button>
                 </div>
             </div>
-
-            <div id="home-mid" class="home-col">
-                <div class="news-box">
-                    <div class="news-header">News</div>
-                    <div class="news-content">
-                        <h4>Welcome to Persona Showdown</h4>
-                        <p>This is the Alpha Prototype. The server is currently running on Railway.</p>
-                    </div>
-                </div>
-            </div>
-
+            <div id="home-mid" class="home-col"></div>
             <div id="home-right" class="home-col">
-                <div style="width: 100%; display: flex; flex-direction: column;">
-                    <div id="lobby-header">Lobby</div>
-                    <div id="lobby-chat-content">
-                        <div style="color: #48c774; text-align: center; margin-top: 20px;">Conectando al servidor central...</div>
-                    </div>
-                    <div id="lobby-input">
-                        <input type="text" id="lobby-textfield" placeholder="Chat here...">
-                    </div>
-                </div>
+                <div id="lobby-header">Lobby</div>
+                <div id="lobby-chat-content"></div>
+                <div id="lobby-input"><input type="text" id="lobby-textfield" placeholder="Chat here..."></div>
             </div>
         </div>
 
         <div id="pantalla-teambuilder" class="pantalla">
-            <div class="tb-header">
-                <h2>Teambuilder</h2>
-            </div>
-            <div style="background: rgba(0,0,0,0.5); padding: 20px; border: 1px solid #444; color: #ccc;">
-                <p>En construcción. Aquí irá la lista de Personas.</p>
-            </div>
+            <div style="padding: 20px;"><h2>Teambuilder</h2></div>
         </div>
 
         <div id="pantalla-batalla" class="pantalla">
             <div id="left-pane">
                 <div id="arena">
-                    <div class="turn-box">Turn <span id="ui-turn">1</span></div>
                     <div class="battler" id="opponent-side">
-                        <div class="hp-box">
-                            <span id="name-opp">Jiraiya</span> <span style="float:right; font-weight:normal;" id="porcentaje-opp">100%</span>
-                            <div style="clear:both;"></div>
-                            <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-opp"></div></div>
-                        </div>
-                        <img src="https://i.ibb.co/hZ2vPj9/jiraiya.png" class="sprite" id="sprite-opp">
+                        <div class="hp-box"><span id="name-opp">Jiraiya</span><div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-opp"></div></div></div>
+                        <img src="https://i.ibb.co/hZ2vPj9/jiraiya.png" class="sprite">
                     </div>
                     <div class="battler" id="player-side">
-                        <div class="hp-box">
-                            <span id="name-p1">Izanagi</span> <span style="float:right; font-weight:normal;" id="porcentaje-p1">100%</span>
-                            <div style="clear:both;"></div>
-                            <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-p1"></div></div>
-                        </div>
+                        <div class="hp-box"><span id="name-p1">Izanagi</span><div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-p1"></div></div></div>
                         <img src="https://i.ibb.co/F8H5H94/izanagi.png" class="sprite" id="sprite-p1">
                     </div>
                 </div>
-
-                <div id="controls">
-                    <div class="controls-header">
-                        <div>What will <strong id="ui-name-p1">...</strong> do? <span style="background:#fff; padding:1px 4px; border: 1px solid #aaa; border-radius:2px; margin-left:5px;">HP <span id="ui-hp-num">.../...</span></span></div>
-                        <button class="timer-btn">Timer</button>
-                    </div>
-                    <div class="moves-grid">
-                        <div style="color: #666; padding: 10px;">Esperando partida...</div>
-                    </div>
-                    <div class="switch-title">Switch</div>
-                    <div class="switch-row">
-                        <button class="switch-btn ps-button">Izanagi</button>
-                        <button class="switch-btn ps-button" style="opacity: 0.5;">Jack Frost</button>
-                    </div>
-                </div>
+                <div id="controls"><div class="moves-grid"></div></div>
             </div>
-
-            <div id="right-pane">
-                <div id="log-header">
-                    <button>Battle Options</button>
-                </div>
-                <div id="log-content">
-                    <div style="color: #888;">Format:<br><strong>[Gen 5 Persona] OU</strong></div><br>
-                    <div id="status-message" style="color: cyan; margin-bottom: 10px;">Esperando rival...</div>
-                </div>
-                <div id="chat-input">
-                    <input type="text" id="chat-textfield" placeholder="Chat here...">
-                </div>
-            </div>
+            <div id="right-pane"><div id="log-content"></div><div id="chat-input"><input type="text" id="chat-textfield"></div></div>
         </div>
-
     </div>
 
     <script>
-        // Función principal de navegación
-        function cambiarTab(pantallaId) {
-            console.log("Cambiando pestaña a:", pantallaId);
+        function cambiarTab(id) {
             document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            
-            document.getElementById(`pantalla-${pantallaId}`).classList.add('active');
-            document.getElementById(`tab-btn-${pantallaId}`).classList.add('active');
+            document.getElementById('pantalla-'+id).classList.add('active');
+            document.getElementById('tab-btn-'+id).classList.add('active');
         }
 
-        const SERVER_URL = 'wss://persona-showdown-production.up.railway.app';
-        const ws = new WebSocket(SERVER_URL);
-        let miRol = null;
-
-        // Evento del botón Battle!
+        const ws = new WebSocket('wss://persona-showdown-production.up.railway.app');
         document.getElementById('btn-find-battle').addEventListener('click', () => {
             document.getElementById('tab-btn-batalla').style.display = 'inline-block';
             cambiarTab('batalla');
-            if(ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: 'SEARCH_MATCH' }));
-            }
+            ws.send(JSON.stringify({ type: 'SEARCH_MATCH' }));
         });
-
-        function habilitarControles(habilitar) {
-            const botones = document.querySelectorAll('.move-btn, .switch-btn');
-            botones.forEach(btn => btn.disabled = !habilitar);
-        }
-        habilitarControles(false);
-
-        function escribirLogBatalla(mensaje) {
-            const log = document.getElementById("log-content");
-            log.innerHTML += `<div>${mensaje}</div>`;
-            log.scrollTop = log.scrollHeight;
-        }
-
-        function escribirLogLobby(mensaje) {
-            const lobbyLog = document.getElementById("lobby-chat-content");
-            lobbyLog.innerHTML += `<div>${mensaje}</div>`;
-            lobbyLog.scrollTop = lobbyLog.scrollHeight;
-        }
-
-        function renderizarAtaques(moves) {
-            const grid = document.querySelector('.moves-grid');
-            grid.innerHTML = ''; 
-            moves.forEach(move => {
-                grid.innerHTML += `
-                    <button class="move-btn ps-button" onclick="enviarAccion('${move.name}', '${move.type}')">
-                        ${move.name} <span class="move-type">${move.type}</span> <span class="move-sp">${move.sp}</span>
-                    </button>
-                `;
-            });
-        }
-
-        function dibujarBarras(state) {
-            if (state.status === 'WAITING') habilitarControles(false);
-            else if (state.status === 'PLAYING') habilitarControles(true);
-
-            if (miRol) {
-                document.getElementById("ui-name-p1").innerText = state[miRol].name;
-                document.getElementById("ui-hp-num").innerText = `${state[miRol].hp}/${state[miRol].hpMax}`;
-                renderizarAtaques(state[miRol].moves);
+        
+        ws.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+            if(data.type === 'UPDATE_STATE') {
+                // Aquí iría tu lógica de actualización de barras
             }
-
-            let pct1 = (state.p1.hp / state.p1.hpMax) * 100;
-            document.getElementById("bar-p1").style.width = pct1 + "%";
-            document.getElementById("porcentaje-p1").innerText = Math.ceil(pct1) + "%";
-            document.getElementById("bar-p1").style.background = pct1 < 25 ? "#ff4444" : (pct1 < 50 ? "#ffdd55" : "#48c774");
-
-            let pct2 = (state.p2.hp / state.p2.hpMax) * 100;
-            document.getElementById("bar-opp").style.width = pct2 + "%";
-            document.getElementById("porcentaje-opp").innerText = Math.ceil(pct2) + "%";
-            document.getElementById("bar-opp").style.background = pct2 < 25 ? "#ff4444" : (pct2 < 50 ? "#ffdd55" : "#48c774");
-
-            document.getElementById("ui-turn").innerText = state.turnCount;
-            habilitarControles(state.status === 'PLAYING'); 
-        }
-
-        ws.onopen = () => {
-            escribirLogLobby(`<div style="color: #48c774; text-align: center; margin-top: 20px;">Connected to server. Ready to battle.</div>`);
         };
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'INIT') {
-                document.getElementById('status-message').innerHTML = data.message;
-                miRol = data.role; 
-            }
-            else if (data.type === 'BATTLE_LOG') escribirLogBatalla(data.message);
-            else if (data.type === 'LOBBY_LOG') escribirLogLobby(data.message);
-            else if (data.type === 'UPDATE_STATE') dibujarBarras(data.state);
-        };
-
-        function enviarAccion(nombreAtaque, tipoAtaque) {
-            if(ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: 'ACTION', skill: nombreAtaque, skillType: tipoAtaque }));
-                habilitarControles(false);
-            }
-        }
-
-        document.getElementById('lobby-textfield').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter' && this.value.trim() !== '') {
-                if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'CHAT_LOBBY', text: this.value }));
-                this.value = ''; 
-            }
-        });
-
-        document.getElementById('chat-textfield').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter' && this.value.trim() !== '') {
-                if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'CHAT_BATTLE', text: this.value }));
-                this.value = ''; 
-            }
-        });
     </script>
 </body>
 </html>
