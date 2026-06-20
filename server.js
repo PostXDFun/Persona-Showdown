@@ -6,17 +6,16 @@ const { WebSocketServer } = require('ws');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// 1. Configurar Express para servir archivos estáticos (sprites, css, js, html)
-// Todo lo que pongas en la carpeta 'public' será accesible desde la web
+// Configurar archivos estáticos (aquí es donde están tus sprites en /public/sprites/)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 2. Crear servidor HTTP y vincularlo a Express
 const server = http.createServer(app);
-
-// 3. Vincular el WebSocketServer al mismo servidor HTTP
 const wss = new WebSocketServer({ server });
 
-// --- LÓGICA DE JUEGO (MANTENIDA) ---
+// --- AYUDANTE PARA PAUSAS ---
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// --- LÓGICA DE JUEGO ---
 
 let allClients = [];
 let room = {
@@ -66,25 +65,40 @@ function broadcastLobbyLog(htmlMessage) {
 function ejecutarAtaque(atacante, defensor, accion) {
     if (atacante.hp <= 0) return; 
     broadcastBattleLog(`<b>${atacante.name}</b> used <b>${accion.skill}</b>!`);
+    
     let damage = Math.floor(Math.random() * (25 - 15 + 1)) + 15; 
     if (accion.skillType === defensor.weakness) {
         damage = damage * 2;
         broadcastBattleLog(`<span style="color:#ffee00; font-weight:bold;">It's super effective!</span> (Opposing ${defensor.name} is weak to ${accion.skillType})`);
     }
+
     defensor.hp -= damage;
     if (defensor.hp < 0) defensor.hp = 0;
+
     let damagePercent = Math.floor((damage / defensor.hpMax) * 100);
     broadcastBattleLog(`<span class="log-damage">(The opposing ${defensor.name} lost ${damagePercent}% of its health!)</span>`);
 }
 
-function resolverTurno() {
+// --- FUNCIÓN ASÍNCRONA PARA RESOLVER EL TURNO CON PAUSAS ---
+async function resolverTurno() {
     broadcastBattleLog(`<div class="log-turn">Turn ${room.turnCount}</div>`);
+    await sleep(1000); // Pausa antes del primer movimiento
+
+    // Ataque 1
     ejecutarAtaque(room.p1, room.p2, room.p1.action);
-    ejecutarAtaque(room.p2, room.p1, room.p2.action);
+    broadcastState();
+    await sleep(2000); // Pausa tras el impacto del primer movimiento
+
+    // Ataque 2 (Solo si el oponente sigue vivo)
+    if (room.p2.hp > 0) {
+        ejecutarAtaque(room.p2, room.p1, room.p2.action);
+        broadcastState();
+        await sleep(1000);
+    }
+
     room.p1.action = null;
     room.p2.action = null;
     room.turnCount++;
-    broadcastState();
 }
 
 function resetearSala() {
@@ -139,6 +153,7 @@ wss.on('connection', (ws) => {
                 room.p2.action = message;
                 ws.send(JSON.stringify({ type: 'BATTLE_LOG', message: `<span style="color: #aaa;">Has elegido ${message.skill}. Esperando al oponente...</span>` }));
             }
+
             if (room.p1.action !== null && room.p2.action !== null) {
                 resolverTurno();
             }
@@ -158,7 +173,6 @@ wss.on('connection', (ws) => {
     });
 });
 
-// ¡IMPORTANTE! Escuchamos en server.listen, no en wss
 server.listen(PORT, () => {
     console.log(`Servidor de Persona Showdown corriendo en el puerto ${PORT}`);
 });
