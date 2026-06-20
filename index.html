@@ -5,8 +5,8 @@
     <title>Persona Showdown</title>
     <style>
         /* =========================================
-           RESET Y ESTILOS GLOBALES SHOWDOWN
-           ========================================= */
+            RESET Y ESTILOS GLOBALES SHOWDOWN
+            ========================================= */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { 
             font-family: Verdana, Helvetica, Arial, sans-serif; 
@@ -43,8 +43,8 @@
         }
 
         /* =========================================
-           TOP BAR (PESTAÑAS)
-           ========================================= */
+            TOP BAR (PESTAÑAS)
+            ========================================= */
         #top-bar { 
             height: 35px; background: rgba(0, 0, 0, 0.6); display: flex; align-items: flex-end; 
             padding: 0 10px; border-bottom: 1px solid #444; flex-shrink: 0;
@@ -66,15 +66,15 @@
         .user-info { color: #88aadd; font-size: 13px; padding-bottom: 6px; font-weight: bold; }
 
         /* =========================================
-           CONTENEDOR PRINCIPAL
-           ========================================= */
+            CONTENEDOR PRINCIPAL
+            ========================================= */
         #main-content { flex-grow: 1; position: relative; width: 100vw; background: rgba(0, 0, 0, 0.3); }
         .pantalla { display: none !important; height: 100%; width: 100%; }
         .pantalla.active { display: flex !important; }
 
         /* =========================================
-           PANTALLA DE INICIO
-           ========================================= */
+            PANTALLA DE INICIO
+            ========================================= */
         #pantalla-inicio { padding: 20px; gap: 20px; justify-content: center; overflow-y: auto; }
 
         .home-col { display: flex; flex-direction: column; gap: 15px; }
@@ -101,14 +101,14 @@
         #lobby-input input { flex-grow: 1; background: #fff; border: 1px solid #aaa; color: #222; padding: 5px; border-radius: 3px; font-family: Verdana; }
 
         /* =========================================
-           PANTALLA DE TEAMBUILDER
-           ========================================= */
+            PANTALLA DE TEAMBUILDER
+            ========================================= */
         #pantalla-teambuilder { background: rgba(30,30,30,0.9); flex-direction: column; padding: 20px; }
         .tb-header { border-bottom: 1px solid #444; padding-bottom: 10px; margin-bottom: 20px; }
         
         /* =========================================
-           PANTALLA DE BATALLA
-           ========================================= */
+            PANTALLA DE BATALLA
+            ========================================= */
         #left-pane { flex: 6; display: flex; flex-direction: column; background: #222; border-right: 1px solid #111; }
         #right-pane { flex: 4; display: flex; flex-direction: column; background: rgba(20,20,20,0.9); }
 
@@ -170,9 +170,6 @@
         
         <div id="pantalla-inicio" class="pantalla active">
             <div id="home-left" class="home-col">
-                <div class="logo-container" style="text-align: left; margin-bottom: 10px;">
-                    <img src="https://play.pokemonshowdown.com/pokemonshowdownbeta.png" alt="Logo" style="max-width: 100%; opacity: 0.8; filter: grayscale(100%);">
-                </div>
                 <div class="matchmaking-box">
                     <div class="ps-select-group">
                         <label>Format:</label>
@@ -188,8 +185,6 @@
                         <small>Find a random opponent</small>
                     </button>
                     <button class="ps-button menu-btn" onclick="cambiarTab('teambuilder')">Teambuilder</button>
-                    <button class="ps-button menu-btn" disabled>Ladder</button>
-                    <button class="ps-button menu-btn" disabled>Tournaments</button>
                 </div>
             </div>
 
