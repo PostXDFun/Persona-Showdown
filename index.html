@@ -2,17 +2,47 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Persona Showdown - Prototype</title>
+    <title>Persona Showdown - Tabs Update</title>
     <style>
         /* RESET BÁSICO */
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Verdana', sans-serif; background: #222; color: #eee; overflow: hidden; height: 100vh; width: 100vw; }
+        body { font-family: 'Verdana', sans-serif; background: #222; color: #eee; overflow: hidden; height: 100vh; width: 100vw; display: flex; flex-direction: column; }
 
         /* =========================================
-           ESTILOS DE LA PANTALLA DE INICIO (LOBBY)
+           TOP BAR (PESTAÑAS ESTILO SHOWDOWN)
            ========================================= */
-        #pantalla-inicio { display: flex; height: 100vh; width: 100vw; background: #222; }
+        #top-bar { 
+            height: 40px; background: #111; display: flex; align-items: flex-end; 
+            padding: 0 10px; border-bottom: 2px solid #2b2b2b; flex-shrink: 0;
+            justify-content: space-between;
+        }
+        
+        .tabs-container { display: flex; gap: 2px; }
+        
+        .tab-btn {
+            background: #333; color: #aaa; border: 1px solid #111; border-bottom: none;
+            padding: 8px 16px; border-radius: 6px 6px 0 0; cursor: pointer;
+            font-size: 13px; font-weight: bold; transition: background 0.2s, color 0.2s;
+            height: 32px;
+        }
+        
+        .tab-btn:hover { background: #444; color: #fff; }
+        .tab-btn.active { background: #2b2b2b; color: #fff; border-top: 2px solid #48c774; height: 35px; }
 
+        .user-info { color: #888; font-size: 13px; padding-bottom: 8px; }
+
+        /* =========================================
+           CONTENEDOR PRINCIPAL Y PANTALLAS
+           ========================================= */
+        #main-content { flex-grow: 1; position: relative; width: 100vw; }
+        
+        /* Todas las pantallas ocupan el 100% del espacio sobrante pero están ocultas por defecto */
+        .pantalla { display: none; height: 100%; width: 100%; }
+        .pantalla.active { display: flex; } /* Solo se muestra la activa */
+
+        /* =========================================
+           ESTILOS: PANTALLA DE INICIO (LOBBY)
+           ========================================= */
         #home-left { flex: 4; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 2px solid #111; background: #2b2b2b; padding: 20px; }
         #home-right { flex: 6; display: flex; flex-direction: column; background: #333; }
 
@@ -23,39 +53,40 @@
         .format-select { margin-bottom: 15px; }
         .format-select select { width: 100%; padding: 8px; background: #222; color: #eee; border: 1px solid #555; border-radius: 4px; margin-top: 5px; }
 
-        /* Botón gigante de Showdown */
         .big-battle-btn { width: 100%; padding: 15px; font-size: 24px; font-weight: bold; background: #48c774; color: white; border: none; border-radius: 4px; cursor: pointer; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); transition: background 0.2s; margin-bottom: 20px; }
         .big-battle-btn:hover { background: #3eb566; }
 
         .home-menu { display: flex; flex-direction: column; gap: 10px; }
-        .menu-btn { padding: 10px; background: #555; color: #ccc; border: 1px solid #666; border-radius: 4px; cursor: not-allowed; text-align: left; font-weight: bold; }
+        .menu-btn { padding: 10px; background: #555; color: #ccc; border: 1px solid #666; border-radius: 4px; cursor: pointer; text-align: left; font-weight: bold; }
+        .menu-btn:hover { background: #666; color: #fff; }
 
-        /* Chat del Lobby */
         #lobby-header { padding: 15px; background: #222; border-bottom: 1px solid #111; color: #eee; font-size: 16px; font-weight: bold; }
         #lobby-chat-content { flex-grow: 1; padding: 15px; overflow-y: auto; font-size: 14px; line-height: 1.5; color: #ccc; }
         #lobby-input { padding: 10px; background: #222; border-top: 1px solid #111; display: flex; }
         #lobby-input input { flex-grow: 1; background: #111; border: 1px solid #444; color: white; padding: 10px; border-radius: 4px; }
 
         /* =========================================
-           ESTILOS DE LA PANTALLA DE BATALLA
+           ESTILOS: PANTALLA DE TEAMBUILDER
            ========================================= */
-        #pantalla-batalla { display: none; height: 100vh; width: 100vw; } /* Oculto por defecto */
+        #pantalla-teambuilder { background: #2b2b2b; flex-direction: column; padding: 20px; }
+        .tb-header { border-bottom: 1px solid #444; padding-bottom: 10px; margin-bottom: 20px; }
         
+        /* =========================================
+           ESTILOS: PANTALLA DE BATALLA
+           ========================================= */
         #left-pane { flex: 6; display: flex; flex-direction: column; background: #333; border-right: 2px solid #111; }
         #right-pane { flex: 4; display: flex; flex-direction: column; background: #2b2b2b; }
 
         /* Arena */
-        #arena { flex: 6; position: relative; background-color: #8fb88b; background-size: cover; border-bottom: 2px solid #111; }
+        #arena { flex: 6; position: relative; background-color: #8fb88b; background-image: url('https://placehold.co/800x400/8fb88b/8fb88b?text='); background-size: cover; border-bottom: 2px solid #111; }
         .turn-box { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.7); color: #333; padding: 2px 8px; border: 1px solid #999; border-radius: 4px; font-weight: bold; font-size: 14px; z-index: 20;}
 
-        /* Sprites y Posicionamiento */
         .battler { position: absolute; display: flex; flex-direction: column; align-items: center; }
         #player-side { bottom: 10px; left: 15%; } 
         #opponent-side { top: 20px; right: 20%; }
         .sprite { width: 260px; height: 260px; object-fit: contain; }
         #sprite-p1 { transform: scaleX(-1); } 
         
-        /* Cajas flotantes de HP */
         .hp-box { background: rgba(0, 0, 0, 0.7); padding: 4px 8px; border-radius: 4px; font-size: 12px; z-index: 10; text-align: right; width: 200px; border: 1px solid #555;}
         #player-side .hp-box { margin-bottom: -20px; text-align: left;} 
         #opponent-side .hp-box { margin-bottom: -15px; }
@@ -69,7 +100,6 @@
         .timer-btn { background: #885555; color: white; border: 1px solid #aa6666; padding: 2px 10px; border-radius: 4px; cursor: pointer; }
         h3 { font-size: 14px; color: #ffaa99; font-style: italic; margin-bottom: 5px;}
 
-        /* Botones de Ataque y Cambio */
         .moves-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px; }
         .move-btn { background: #e6e6e6; border: 1px solid #999; border-radius: 4px; padding: 8px; cursor: pointer; text-align: center; color: #333; position: relative; font-weight: bold; }
         .move-btn:hover:not(:disabled) { background: #fff; }
@@ -82,7 +112,7 @@
 
         button:disabled, .move-btn:disabled, .switch-btn:disabled { opacity: 0.4; cursor: not-allowed; background: #555 !important; color: #aaa !important; border-color: #333; }
 
-        /* Log y Chat de Batalla */
+        /* Log de Batalla */
         #log-header { padding: 10px; background: #333; border-bottom: 1px solid #111; text-align: right; }
         #log-header button { background: #444; color: #eee; border: 1px solid #666; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
         #log-content { flex-grow: 1; padding: 15px; overflow-y: auto; font-size: 13px; line-height: 1.4; color: #ccc; }
@@ -94,149 +124,174 @@
 </head>
 <body>
 
-    <div id="pantalla-inicio">
-        <div id="home-left">
-            <div class="logo-container">
-                <h2>Persona Showdown</h2>
-                <p style="color: #888; font-size: 12px;">Alpha Prototype</p>
-            </div>
-
-            <div class="matchmaking-box">
-                <div class="format-select">
-                    <span style="color: #aaa; font-size: 12px;">Format:</span>
-                    <select disabled>
-                        <option>[Gen 5 Persona] OU</option>
-                    </select>
-                </div>
-                
-                <button id="btn-find-battle" class="big-battle-btn">Battle!</button>
-                
-                <div class="home-menu">
-                    <button class="menu-btn" disabled>Teambuilder</button>
-                    <button class="menu-btn" disabled>Ladder</button>
-                    <button class="menu-btn" disabled>Watch a battle</button>
-                </div>
-            </div>
+    <div id="top-bar">
+        <div class="tabs-container">
+            <button class="tab-btn active" id="tab-btn-inicio" onclick="cambiarPestaña('inicio')">🏠 Home</button>
+            <button class="tab-btn" id="tab-btn-teambuilder" onclick="cambiarPestaña('teambuilder')">🛠️ Teambuilder</button>
+            
+            <button class="tab-btn" id="tab-btn-batalla" onclick="cambiarPestaña('batalla')" style="display: none; color: #ffaa99;">⚔️ Battle</button>
         </div>
-
-        <div id="home-right">
-            <div id="lobby-header">
-                Lobby <span style="color: #888; font-size: 12px;">(Global Chat)</span>
-            </div>
-            <div id="lobby-chat-content">
-                <div style="color: #48c774; text-align: center; margin-top: 20px;">Conectando al servidor central...</div>
-            </div>
-            <div id="lobby-input">
-                <input type="text" id="lobby-textfield" placeholder="Habla con el lobby...">
-            </div>
+        <div class="user-info">
+            👤 <span id="username-display">Guest</span>
         </div>
     </div>
 
-    <div id="pantalla-batalla">
-        <div id="left-pane">
-            <div id="arena">
-                <div class="turn-box">Turn <span id="ui-turn">1</span></div>
+    <div id="main-content">
+        
+        <div id="pantalla-inicio" class="pantalla active">
+            <div id="home-left">
+                <div class="logo-container">
+                    <h2>Persona Showdown</h2>
+                    <p style="color: #888; font-size: 12px;">Alpha Prototype</p>
+                </div>
+
+                <div class="matchmaking-box">
+                    <div class="format-select">
+                        <span style="color: #aaa; font-size: 12px;">Format:</span>
+                        <select disabled><option>[Gen 5 Persona] OU</option></select>
+                    </div>
+                    
+                    <button id="btn-find-battle" class="big-battle-btn">Battle!</button>
+                    
+                    <div class="home-menu">
+                        <button class="menu-btn" onclick="cambiarPestaña('teambuilder')">Teambuilder</button>
+                        <button class="menu-btn" disabled>Ladder</button>
+                    </div>
+                </div>
+            </div>
+            <div id="home-right">
+                <div id="lobby-header">Lobby <span style="color: #888; font-size: 12px;">(Global Chat)</span></div>
+                <div id="lobby-chat-content">
+                    <div style="color: #48c774; text-align: center; margin-top: 20px;">Conectando al servidor central...</div>
+                </div>
+                <div id="lobby-input">
+                    <input type="text" id="lobby-textfield" placeholder="Habla con el lobby...">
+                </div>
+            </div>
+        </div>
+
+        <div id="pantalla-teambuilder" class="pantalla">
+            <div class="tb-header">
+                <h2>Teambuilder</h2>
+                <p style="color: #aaa;">Arma tu party de Personas. (Próximamente...)</p>
+            </div>
+            <div style="background: #222; padding: 20px; border: 1px dashed #555; text-align: center; color: #777;">
+                <h3>🛠️ Área en construcción</h3>
+                <p>Aquí pondremos la lógica para que puedas elegir tu Compendium.</p>
+                <button onclick="cambiarPestaña('inicio')" style="margin-top: 20px; padding: 10px; cursor: pointer;">Volver al Inicio</button>
+            </div>
+        </div>
+
+        <div id="pantalla-batalla" class="pantalla">
+            <div id="left-pane">
+                <div id="arena">
+                    <div class="turn-box">Turn <span id="ui-turn">1</span></div>
+                    
+                    <div class="battler" id="opponent-side">
+                        <div class="hp-box">
+                            <span id="name-opp">Jiraiya</span> <span style="float:right; font-weight:normal;" id="porcentaje-opp">100%</span>
+                            <div style="clear:both;"></div>
+                            <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-opp"></div></div>
+                        </div>
+                        <img src="https://i.ibb.co/hZ2vPj9/jiraiya.png" class="sprite" id="sprite-opp">
+                    </div>
+
+                    <div class="battler" id="player-side">
+                        <div class="hp-box">
+                            <span id="name-p1">Izanagi</span> <span style="float:right; font-weight:normal;" id="porcentaje-p1">100%</span>
+                            <div style="clear:both;"></div>
+                            <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-p1"></div></div>
+                        </div>
+                        <img src="https://i.ibb.co/F8H5H94/izanagi.png" class="sprite" id="sprite-p1">
+                    </div>
+                </div>
+
+                <div id="controls">
+                    <div class="controls-header">
+                        <div>What will <strong id="ui-name-p1">...</strong> do? <span style="background:#222; padding:2px 4px; border-radius:2px; margin-left:5px;">HP <span id="ui-hp-num">.../...</span></span></div>
+                        <button class="timer-btn">⏳ 2:30</button>
+                    </div>
+
+                    <h3>Attack</h3>
+                    <div class="moves-grid">
+                        <div style="color: #888; padding: 10px;">Esperando partida...</div>
+                    </div>
+
+                    <h3 class="switch-title">Switch</h3>
+                    <div class="switch-row">
+                        <button class="switch-btn">⚔️ Principal</button>
+                        <button class="switch-btn" style="opacity: 0.5;">🔥 Persona 2</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="right-pane">
+                <div id="log-header">
+                    <button>Battle Options</button>
+                </div>
                 
-                <div class="battler" id="opponent-side">
-                    <div class="hp-box">
-                        <span id="name-opp">Jiraiya</span> <span style="float:right; font-weight:normal;" id="porcentaje-opp">100%</span>
-                        <div style="clear:both;"></div>
-                        <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-opp"></div></div>
-                    </div>
-                    <img src="https://i.ibb.co/hZ2vPj9/jiraiya.png" class="sprite" id="sprite-opp">
+                <div id="log-content">
+                    <div style="color: #888;">Format:<br><strong>[Gen 5 Persona] OU</strong></div><br>
+                    <div id="status-message" style="color: cyan; margin-bottom: 10px;">Esperando rival...</div>
                 </div>
 
-                <div class="battler" id="player-side">
-                    <div class="hp-box">
-                        <span id="name-p1">Izanagi</span> <span style="float:right; font-weight:normal;" id="porcentaje-p1">100%</span>
-                        <div style="clear:both;"></div>
-                        <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-p1"></div></div>
-                    </div>
-                    <img src="https://i.ibb.co/F8H5H94/izanagi.png" class="sprite" id="sprite-p1">
-                </div>
-            </div>
-
-            <div id="controls">
-                <div class="controls-header">
-                    <div>What will <strong id="ui-name-p1">...</strong> do? <span style="background:#222; padding:2px 4px; border-radius:2px; margin-left:5px;">HP <span id="ui-hp-num">.../...</span></span></div>
-                    <button class="timer-btn">⏳ 2:30</button>
-                </div>
-
-                <h3>Attack</h3>
-                <div class="moves-grid">
-                    <div style="color: #888; padding: 10px;">Esperando partida...</div>
-                </div>
-
-                <h3 class="switch-title">Switch</h3>
-                <div class="switch-row">
-                    <button class="switch-btn">⚔️ Principal</button>
-                    <button class="switch-btn" style="opacity: 0.5;">🔥 Persona 2</button>
-                    <button class="switch-btn" style="opacity: 0.5;">💨 Persona 3</button>
+                <div id="chat-input">
+                    <input type="text" id="chat-textfield" placeholder="Chat de batalla...">
                 </div>
             </div>
         </div>
 
-        <div id="right-pane">
-            <div id="log-header">
-                <button>Battle Options</button>
-            </div>
-            
-            <div id="log-content">
-                <div style="color: #888;">
-                    Format:<br>
-                    <strong>[Gen 5 Persona] OU</strong><br>
-                    <span style="background: #555; color: white; padding: 2px 4px; border-radius: 4px; font-size: 11px;">Rated battle</span><br>
-                    <em>Rule: Baton Pass is restricted.</em><br>
-                    <em>Rule: SP Adhesives are banned.</em>
-                </div>
-                <br>
-                <div id="status-message" style="color: cyan; margin-bottom: 10px;">Esperando rival...</div>
-            </div>
-
-            <div id="chat-input">
-                <input type="text" id="chat-textfield" placeholder="Chat de batalla...">
-            </div>
-        </div>
     </div>
 
     <script>
-        const SERVER_URL = 'wss://persona-showdown-production.up.railway.app';
-        const ws = new WebSocket(SERVER_URL);
-
-        let miRol = null;
-
         // -----------------------------------------
-        // LÓGICA DE TRANSICIÓN LOBBY -> BATALLA
+        // GESTIÓN DE PESTAÑAS (SPA)
         // -----------------------------------------
-        document.getElementById('btn-find-battle').addEventListener('click', () => {
-            // Ocultamos inicio, mostramos batalla (usando flex para no romper el grid)
-            document.getElementById('pantalla-inicio').style.display = 'none';
-            document.getElementById('pantalla-batalla').style.display = 'flex';
+        function cambiarPestaña(pantallaId) {
+            // 1. Ocultar todas las pantallas
+            document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('active'));
+            // 2. Desmarcar todos los botones de pestaña
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             
-            // Le avisamos al servidor que queremos pelear
+            // 3. Mostrar la pantalla elegida y marcar su pestaña
+            document.getElementById(`pantalla-${pantallaId}`).classList.add('active');
+            document.getElementById(`tab-btn-${pantallaId}`).classList.add('active');
+        }
+
+        // Al darle al botón "Battle!" gigante
+        document.getElementById('btn-find-battle').addEventListener('click', () => {
+            // Mostrar la pestaña oculta de "Battle" en el top-bar
+            document.getElementById('tab-btn-batalla').style.display = 'inline-block';
+            
+            // Navegar automáticamente a la batalla
+            cambiarPestaña('batalla');
+            
+            // Avisar al servidor
             if(ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({ type: 'SEARCH_MATCH' }));
             }
         });
 
         // -----------------------------------------
-        // LÓGICA DE LA INTERFAZ DE BATALLA
+        // WEBSOCKETS Y LÓGICA DEL JUEGO
         // -----------------------------------------
+        const SERVER_URL = 'wss://persona-showdown-production.up.railway.app';
+        const ws = new WebSocket(SERVER_URL);
+
+        let miRol = null;
+
         function habilitarControles(habilitar) {
             const botones = document.querySelectorAll('.move-btn, .switch-btn');
             botones.forEach(btn => btn.disabled = !habilitar);
         }
-
         habilitarControles(false);
 
-        // Imprimir en el chat de Batalla
         function escribirLogBatalla(mensaje) {
             const log = document.getElementById("log-content");
             log.innerHTML += `<div>${mensaje}</div>`;
             log.scrollTop = log.scrollHeight;
         }
 
-        // Imprimir en el chat del Lobby
         function escribirLogLobby(mensaje) {
             const lobbyLog = document.getElementById("lobby-chat-content");
             lobbyLog.innerHTML += `<div>${mensaje}</div>`;
@@ -277,13 +332,11 @@
                 renderizarAtaques(state[miRol].moves);
             }
 
-            // Vida P1
             let pct1 = (state.p1.hp / state.p1.hpMax) * 100;
             document.getElementById("bar-p1").style.width = pct1 + "%";
             document.getElementById("porcentaje-p1").innerText = Math.ceil(pct1) + "%";
             document.getElementById("bar-p1").style.background = pct1 < 25 ? "#ff4444" : (pct1 < 50 ? "#ffdd55" : "#48c774");
 
-            // Vida P2
             let pct2 = (state.p2.hp / state.p2.hpMax) * 100;
             document.getElementById("bar-opp").style.width = pct2 + "%";
             document.getElementById("porcentaje-opp").innerText = Math.ceil(pct2) + "%";
@@ -293,9 +346,7 @@
             habilitarControles(state.status === 'PLAYING'); 
         }
 
-        // -----------------------------------------
-        // RECEPCIÓN DE MENSAJES DEL SERVIDOR
-        // -----------------------------------------
+        // EVENTOS DEL SOCKET
         ws.onopen = () => {
             document.getElementById("lobby-chat-content").innerHTML = `<div style="color: #48c774; text-align: center; margin-top: 20px;">Conectado exitosamente. Listo para buscar partida.</div>`;
         };
@@ -318,9 +369,6 @@
             }
         };
 
-        // -----------------------------------------
-        // ENVÍO DE ACCIONES Y CHAT
-        // -----------------------------------------
         function enviarAccion(nombreAtaque, tipoAtaque) {
             if(ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({ type: 'ACTION', skill: nombreAtaque, skillType: tipoAtaque }));
@@ -328,22 +376,16 @@
             }
         }
 
-        // Enter en chat de Lobby
         document.getElementById('lobby-textfield').addEventListener('keypress', function (e) {
             if (e.key === 'Enter' && this.value.trim() !== '') {
-                if(ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify({ type: 'CHAT_LOBBY', text: this.value }));
-                }
+                if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'CHAT_LOBBY', text: this.value }));
                 this.value = ''; 
             }
         });
 
-        // Enter en chat de Batalla
         document.getElementById('chat-textfield').addEventListener('keypress', function (e) {
             if (e.key === 'Enter' && this.value.trim() !== '') {
-                if(ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify({ type: 'CHAT_BATTLE', text: this.value }));
-                }
+                if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'CHAT_BATTLE', text: this.value }));
                 this.value = ''; 
             }
         });
