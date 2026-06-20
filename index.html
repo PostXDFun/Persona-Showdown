@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Persona Web Showdown</title>
+    <style>
+        body { font-family: sans-serif; background: #111; color: #fff; text-align: center; }
+        #log { border: 1px solid #444; height: 200px; overflow-y: scroll; margin: 20px; padding: 10px; background: #222; }
+        button { padding: 10px 20px; font-size: 16px; background: #d32f2f; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Persona Web Prototype</h1>
+    <div id="log"></div>
+    <button id="attackBtn" disabled>¡Usar Agi!</button>
+
+    <script>
+        // Reemplaza con la URL de Railway cuando lo subas (ej: wss://tu-app.up.railway.app)
+        const SERVER_URL = 'ws://localhost:8080'; 
+        const ws = new WebSocket(SERVER_URL);
+        const logDiv = document.getElementById('log');
+        const attackBtn = document.getElementById('attackBtn');
+
+        ws.onopen = () => {
+            logDiv.innerHTML += `<p style="color: green;">Conectado al servidor</p>`;
+            attackBtn.disabled = false;
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            if (data.type === 'INIT') {
+                logDiv.innerHTML += `<p>${data.message}</p>`;
+            } else if (data.type === 'ACTION') {
+                logDiv.innerHTML += `<p style="color: red;">El rival usó: <strong>${data.skill}</strong> y causó daño.</p>`;
+            }
+        };
+
+        attackBtn.addEventListener('click', () => {
+            const action = { type: 'ACTION', skill: 'Agi', damage: 40 };
+            ws.send(JSON.stringify(action));
+            logDiv.innerHTML += `<p style="color: cyan;">Usaste Agi. Esperando respuesta del rival...</p>`;
+        });
+    </script>
+</body>
+</html>
