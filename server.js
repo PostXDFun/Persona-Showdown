@@ -3,7 +3,10 @@ const { WebSocketServer } = require('ws');
 const PORT = process.env.PORT || 8080;
 const wss = new WebSocketServer({ port: PORT });
 
-// El servidor ahora guarda los movimientos de cada personaje
+// 1. LISTA GLOBAL: Todos los que están en la página (Lobby)
+let allClients = [];
+
+// 2. SALA DE BATALLA: Los que le dieron al botón "Battle!"
 let room = {
     status: 'WAITING',
     players: [],
@@ -28,11 +31,11 @@ let room = {
     turnCount: 1
 };
 
+// --- FUNCIONES PARA ENVIAR MENSAJES ---
+
 function broadcastState() {
-    // Enviamos los movimientos a los clientes para que dibujen sus botones
     const safeState = {
-        status: room.status,
-        turnCount: room.turnCount,
+        status: room.status, turnCount: room.turnCount,
         p1: { name: room.p1.name, hpMax: room.p1.hpMax, hp: room.p1.hp, moves: room.p1.moves },
         p2: { name: room.p2.name, hpMax: room.p2.hpMax, hp: room.p2.hp, moves: room.p2.moves }
     };
@@ -40,31 +43,38 @@ function broadcastState() {
     room.players.forEach(p => { if (p.readyState === p.OPEN) p.send(message); });
 }
 
-function broadcastLog(htmlMessage) {
+function broadcastBattleLog(htmlMessage) {
     const message = JSON.stringify({ type: 'BATTLE_LOG', message: htmlMessage });
     room.players.forEach(p => { if (p.readyState === p.OPEN) p.send(message); });
 }
 
+function broadcastLobbyLog(htmlMessage) {
+    const message = JSON.stringify({ type: 'LOBBY_LOG', message: htmlMessage });
+    allClients.forEach(c => { if (c.readyState === c.OPEN) c.send(message); });
+}
+
+// --- LÓGICA DE COMBATE ---
+
 function ejecutarAtaque(atacante, defensor, accion) {
     if (atacante.hp <= 0) return; 
     
-    broadcastLog(`<b>${atacante.name}</b> used <b>${accion.skill}</b>!`);
+    broadcastBattleLog(`<b>${atacante.name}</b> used <b>${accion.skill}</b>!`);
     
     let damage = Math.floor(Math.random() * (25 - 15 + 1)) + 15; 
     if (accion.skillType === defensor.weakness) {
         damage = damage * 2;
-        broadcastLog(`<span style="color:#ffee00; font-weight:bold;">It's super effective!</span> (Opposing ${defensor.name} is weak to ${accion.skillType})`);
+        broadcastBattleLog(`<span style="color:#ffee00; font-weight:bold;">It's super effective!</span> (Opposing ${defensor.name} is weak to ${accion.skillType})`);
     }
 
     defensor.hp -= damage;
     if (defensor.hp < 0) defensor.hp = 0;
 
     let damagePercent = Math.floor((damage / defensor.hpMax) * 100);
-    broadcastLog(`<span class="log-damage">(The opposing ${defensor.name} lost ${damagePercent}% of its health!)</span>`);
+    broadcastBattleLog(`<span class="log-damage">(The opposing ${defensor.name} lost ${damagePercent}% of its health!)</span>`);
 }
 
 function resolverTurno() {
-    broadcastLog(`<div class="log-turn">Turn ${room.turnCount}</div>`);
+    broadcastBattleLog(`<div class="log-turn">Turn ${room.turnCount}</div>`);
 
     ejecutarAtaque(room.p1, room.p2, room.p1.action);
     ejecutarAtaque(room.p2, room.p1, room.p2.action);
@@ -76,33 +86,63 @@ function resolverTurno() {
     broadcastState();
 }
 
+function resetearSala() {
+    room.p1.hp = room.p1.hpMax;
+    room.p2.hp = room.p2.hpMax;
+    room.turnCount = 1;
+    room.p1.action = null;
+    room.p2.action = null;
+}
+
+// --- CONEXIONES WEBSOCKET ---
+
 wss.on('connection', (ws) => {
-    if (room.players.length >= 2) {
-        ws.send(JSON.stringify({ type: 'FULL', message: 'La sala está llena' }));
-        ws.close();
-        return;
-    }
-
-    room.players.push(ws);
-    const isP1 = room.p1.ws === null;
-
-    if (isP1) {
-        room.p1.ws = ws;
-        // NOTA: Ahora enviamos role: 'p1'
-        ws.send(JSON.stringify({ type: 'INIT', message: 'Eres el Jugador 1 (Izanagi). Esperando a que se una el rival...', role: 'p1' }));
-    } else {
-        room.p2.ws = ws;
-        room.status = 'PLAYING';
-        // NOTA: Ahora enviamos role: 'p2'
-        ws.send(JSON.stringify({ type: 'INIT', message: 'Eres el Jugador 2 (Jiraiya). ¡Batalla lista!', role: 'p2' }));
-        broadcastLog(`<span style="color: #48c774;">¡Ambos jugadores conectados! Empieza la batalla.</span>`);
-        broadcastState();
-    }
+    // 1. Apenas entra a la página web, lo metemos al Lobby
+    allClients.push(ws);
+    ws.send(JSON.stringify({ type: 'LOBBY_LOG', message: '<span style="color: cyan;">Conectado al servidor central. Presiona "Battle!" para buscar partida.</span>' }));
 
     ws.on('message', (data) => {
         const message = JSON.parse(data);
 
-        if (message.type === 'ACTION' && room.status === 'PLAYING') {
+        // -- MANEJO DEL LOBBY --
+        if (message.type === 'CHAT_LOBBY') {
+            broadcastLobbyLog(`<strong>Usuario:</strong> ${message.text}`);
+        }
+        else if (message.type === 'CHAT_BATTLE') {
+            broadcastBattleLog(`<strong style="color: #ffaa99;">Player:</strong> ${message.text}`);
+        }
+
+        // -- MATCHMAKING: Le dio al botón "Battle!" --
+        else if (message.type === 'SEARCH_MATCH') {
+            // Si ya está en la sala, lo ignoramos
+            if (room.players.includes(ws)) return; 
+
+            // Si la sala está llena (2 personas ya jugando)
+            if (room.players.length >= 2) {
+                ws.send(JSON.stringify({ type: 'BATTLE_LOG', message: '<span style="color: red;">Las arenas están llenas actualmente. Intenta de nuevo más tarde.</span>' }));
+                return;
+            }
+
+            // Lo metemos a la sala
+            room.players.push(ws);
+            const isP1 = room.p1.ws === null;
+
+            if (isP1) {
+                room.p1.ws = ws;
+                ws.send(JSON.stringify({ type: 'INIT', message: 'Buscando rival... (Jugarás como Izanagi)', role: 'p1' }));
+                resetearSala(); // Por si quedó tocado de una batalla anterior
+                broadcastState();
+            } else {
+                room.p2.ws = ws;
+                room.status = 'PLAYING';
+                ws.send(JSON.stringify({ type: 'INIT', message: '¡Rival encontrado! (Jugarás como Jiraiya)', role: 'p2' }));
+                broadcastBattleLog(`<span style="color: #48c774;">¡Ambos jugadores conectados! Empieza la batalla.</span>`);
+                broadcastState();
+            }
+        }
+
+        // -- LÓGICA DE ATAQUES --
+        else if (message.type === 'ACTION' && room.status === 'PLAYING') {
             if (ws === room.p1.ws) {
                 room.p1.action = message;
                 ws.send(JSON.stringify({ type: 'BATTLE_LOG', message: `<span style="color: #aaa;">Has elegido ${message.skill}. Esperando al oponente...</span>` }));
@@ -115,23 +155,22 @@ wss.on('connection', (ws) => {
                 resolverTurno();
             }
         }
-        
-        if (message.type === 'CHAT') {
-            broadcastLog(`<strong style="color: #ffaa99;">Player:</strong> ${message.text}`);
-        }
     });
 
     ws.on('close', () => {
-        room.players = room.players.filter(p => p !== ws);
-        if (ws === room.p1.ws) room.p1.ws = null;
-        if (ws === room.p2.ws) room.p2.ws = null;
+        // Lo sacamos del Lobby global
+        allClients = allClients.filter(c => c !== ws);
         
-        room.status = 'WAITING';
-        room.p1.action = null;
-        room.p2.action = null;
-        
-        broadcastLog(`<span style="color: #ff4444;">El oponente se ha desconectado. Esperando un nuevo jugador...</span>`);
-        broadcastState();
+        // Si el que se fue estaba en medio de una batalla...
+        if (room.players.includes(ws)) {
+            room.players = room.players.filter(p => p !== ws);
+            if (ws === room.p1.ws) room.p1.ws = null;
+            if (ws === room.p2.ws) room.p2.ws = null;
+            
+            room.status = 'WAITING';
+            broadcastBattleLog(`<span style="color: #ff4444;">El oponente ha huido de la batalla. Victoria por abandono.</span>`);
+            broadcastState();
+        }
     });
 });
 
