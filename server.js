@@ -1,12 +1,24 @@
+const express = require('express');
+const http = require('http');
+const path = require('path');
 const { WebSocketServer } = require('ws');
 
+const app = express();
 const PORT = process.env.PORT || 8080;
-const wss = new WebSocketServer({ port: PORT });
 
-// 1. LISTA GLOBAL: Todos los que están en la página (Lobby)
+// 1. Configurar Express para servir archivos estáticos (sprites, css, js, html)
+// Todo lo que pongas en la carpeta 'public' será accesible desde la web
+app.use(express.static(path.join(__dirname, 'public')));
+
+// 2. Crear servidor HTTP y vincularlo a Express
+const server = http.createServer(app);
+
+// 3. Vincular el WebSocketServer al mismo servidor HTTP
+const wss = new WebSocketServer({ server });
+
+// --- LÓGICA DE JUEGO (MANTENIDA) ---
+
 let allClients = [];
-
-// 2. SALA DE BATALLA: Los que le dieron al botón "Battle!"
 let room = {
     status: 'WAITING',
     players: [],
@@ -31,8 +43,6 @@ let room = {
     turnCount: 1
 };
 
-// --- FUNCIONES PARA ENVIAR MENSAJES ---
-
 function broadcastState() {
     const safeState = {
         status: room.status, turnCount: room.turnCount,
@@ -53,36 +63,27 @@ function broadcastLobbyLog(htmlMessage) {
     allClients.forEach(c => { if (c.readyState === c.OPEN) c.send(message); });
 }
 
-// --- LÓGICA DE COMBATE ---
-
 function ejecutarAtaque(atacante, defensor, accion) {
     if (atacante.hp <= 0) return; 
-    
     broadcastBattleLog(`<b>${atacante.name}</b> used <b>${accion.skill}</b>!`);
-    
     let damage = Math.floor(Math.random() * (25 - 15 + 1)) + 15; 
     if (accion.skillType === defensor.weakness) {
         damage = damage * 2;
         broadcastBattleLog(`<span style="color:#ffee00; font-weight:bold;">It's super effective!</span> (Opposing ${defensor.name} is weak to ${accion.skillType})`);
     }
-
     defensor.hp -= damage;
     if (defensor.hp < 0) defensor.hp = 0;
-
     let damagePercent = Math.floor((damage / defensor.hpMax) * 100);
     broadcastBattleLog(`<span class="log-damage">(The opposing ${defensor.name} lost ${damagePercent}% of its health!)</span>`);
 }
 
 function resolverTurno() {
     broadcastBattleLog(`<div class="log-turn">Turn ${room.turnCount}</div>`);
-
     ejecutarAtaque(room.p1, room.p2, room.p1.action);
     ejecutarAtaque(room.p2, room.p1, room.p2.action);
-
     room.p1.action = null;
     room.p2.action = null;
     room.turnCount++;
-
     broadcastState();
 }
 
@@ -97,40 +98,30 @@ function resetearSala() {
 // --- CONEXIONES WEBSOCKET ---
 
 wss.on('connection', (ws) => {
-    // 1. Apenas entra a la página web, lo metemos al Lobby
     allClients.push(ws);
     ws.send(JSON.stringify({ type: 'LOBBY_LOG', message: '<span style="color: cyan;">Conectado al servidor central. Presiona "Battle!" para buscar partida.</span>' }));
 
     ws.on('message', (data) => {
         const message = JSON.parse(data);
 
-        // -- MANEJO DEL LOBBY --
         if (message.type === 'CHAT_LOBBY') {
             broadcastLobbyLog(`<strong>Usuario:</strong> ${message.text}`);
         }
         else if (message.type === 'CHAT_BATTLE') {
             broadcastBattleLog(`<strong style="color: #ffaa99;">Player:</strong> ${message.text}`);
         }
-
-        // -- MATCHMAKING: Le dio al botón "Battle!" --
         else if (message.type === 'SEARCH_MATCH') {
-            // Si ya está en la sala, lo ignoramos
             if (room.players.includes(ws)) return; 
-
-            // Si la sala está llena (2 personas ya jugando)
             if (room.players.length >= 2) {
                 ws.send(JSON.stringify({ type: 'BATTLE_LOG', message: '<span style="color: red;">Las arenas están llenas actualmente. Intenta de nuevo más tarde.</span>' }));
                 return;
             }
-
-            // Lo metemos a la sala
             room.players.push(ws);
             const isP1 = room.p1.ws === null;
-
             if (isP1) {
                 room.p1.ws = ws;
                 ws.send(JSON.stringify({ type: 'INIT', message: 'Buscando rival... (Jugarás como Izanagi)', role: 'p1' }));
-                resetearSala(); // Por si quedó tocado de una batalla anterior
+                resetearSala();
                 broadcastState();
             } else {
                 room.p2.ws = ws;
@@ -140,8 +131,6 @@ wss.on('connection', (ws) => {
                 broadcastState();
             }
         }
-
-        // -- LÓGICA DE ATAQUES --
         else if (message.type === 'ACTION' && room.status === 'PLAYING') {
             if (ws === room.p1.ws) {
                 room.p1.action = message;
@@ -150,7 +139,6 @@ wss.on('connection', (ws) => {
                 room.p2.action = message;
                 ws.send(JSON.stringify({ type: 'BATTLE_LOG', message: `<span style="color: #aaa;">Has elegido ${message.skill}. Esperando al oponente...</span>` }));
             }
-
             if (room.p1.action !== null && room.p2.action !== null) {
                 resolverTurno();
             }
@@ -158,15 +146,11 @@ wss.on('connection', (ws) => {
     });
 
     ws.on('close', () => {
-        // Lo sacamos del Lobby global
         allClients = allClients.filter(c => c !== ws);
-        
-        // Si el que se fue estaba en medio de una batalla...
         if (room.players.includes(ws)) {
             room.players = room.players.filter(p => p !== ws);
             if (ws === room.p1.ws) room.p1.ws = null;
             if (ws === room.p2.ws) room.p2.ws = null;
-            
             room.status = 'WAITING';
             broadcastBattleLog(`<span style="color: #ff4444;">El oponente ha huido de la batalla. Victoria por abandono.</span>`);
             broadcastState();
@@ -174,4 +158,7 @@ wss.on('connection', (ws) => {
     });
 });
 
-console.log(`Servidor de Persona Showdown corriendo en el puerto ${PORT}`);
+// ¡IMPORTANTE! Escuchamos en server.listen, no en wss
+server.listen(PORT, () => {
+    console.log(`Servidor de Persona Showdown corriendo en el puerto ${PORT}`);
+});
