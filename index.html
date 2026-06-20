@@ -10,9 +10,8 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { 
             font-family: Verdana, Helvetica, Arial, sans-serif; 
-            font-size: 10pt; /* Tamaño típico de Showdown */
+            font-size: 10pt;
             background-color: #111; 
-            /* Aquí puedes poner tu fondo de Armored Core reemplazando la URL */
             background-image: url(''); 
             background-size: cover;
             background-position: center;
@@ -24,7 +23,6 @@
             flex-direction: column; 
         }
 
-        /* Botones estilo Showdown clásico */
         .ps-button {
             background: linear-gradient(to bottom, #f9f9f9, #e5e5e5);
             border: 1px solid #aaa;
@@ -71,39 +69,32 @@
            CONTENEDOR PRINCIPAL
            ========================================= */
         #main-content { flex-grow: 1; position: relative; width: 100vw; background: rgba(0, 0, 0, 0.3); }
-        .pantalla { display: none; height: 100%; width: 100%; }
-        .pantalla.active { display: flex; }
+        .pantalla { display: none !important; height: 100%; width: 100%; }
+        .pantalla.active { display: flex !important; }
 
         /* =========================================
-           PANTALLA DE INICIO (LOBBY) - 3 COLUMNAS
+           PANTALLA DE INICIO
            ========================================= */
-        #pantalla-inicio { display: flex; padding: 20px; gap: 20px; justify-content: center; overflow-y: auto; }
+        #pantalla-inicio { padding: 20px; gap: 20px; justify-content: center; overflow-y: auto; }
 
         .home-col { display: flex; flex-direction: column; gap: 15px; }
         #home-left { width: 250px; }
         #home-mid { width: 300px; }
         #home-right { width: 400px; background: rgba(10, 10, 10, 0.8); border: 1px solid #333; border-radius: 4px; display: flex; }
 
-        /* Controles de Matchmaking */
         .matchmaking-box { display: flex; flex-direction: column; gap: 10px; }
         .ps-select-group label { display: block; font-size: 11px; color: #bbb; margin-bottom: 2px; font-weight: bold;}
         .ps-select-group select { width: 100%; padding: 4px; background: #ddd; color: #222; border: 1px solid #888; border-radius: 3px; font-family: Verdana; }
         
-        .big-battle-btn { 
-            width: 100%; padding: 12px 5px; font-size: 18px; font-weight: bold; 
-            margin: 10px 0; text-align: center; line-height: 1.2;
-        }
+        .big-battle-btn { width: 100%; padding: 12px 5px; font-size: 18px; font-weight: bold; margin: 10px 0; text-align: center; line-height: 1.2;}
         .big-battle-btn small { font-size: 10px; font-weight: normal; color: #555; }
-
         .menu-btn { width: 100%; padding: 6px; text-align: center; font-weight: bold; color: #444; }
 
-        /* Caja de Noticias */
         .news-box { background: rgba(60, 60, 40, 0.8); border: 1px solid #886; border-radius: 3px; color: #ddd; }
         .news-header { background: rgba(0, 0, 0, 0.3); padding: 5px 10px; font-weight: bold; border-bottom: 1px solid #886; font-size: 11px;}
         .news-content { padding: 10px; font-size: 12px; line-height: 1.4; }
         .news-content h4 { color: #fff; margin-bottom: 5px; font-size: 13px;}
 
-        /* Chat del Lobby */
         #lobby-header { padding: 8px 10px; background: rgba(0,0,0,0.5); border-bottom: 1px solid #222; color: #fff; font-size: 14px; font-weight: bold; }
         #lobby-chat-content { flex-grow: 1; padding: 10px; overflow-y: auto; font-size: 13px; line-height: 1.4; color: #ccc; height: 300px; }
         #lobby-input { padding: 5px; background: rgba(0,0,0,0.5); border-top: 1px solid #222; display: flex; }
@@ -121,7 +112,6 @@
         #left-pane { flex: 6; display: flex; flex-direction: column; background: #222; border-right: 1px solid #111; }
         #right-pane { flex: 4; display: flex; flex-direction: column; background: rgba(20,20,20,0.9); }
 
-        /* Arena */
         #arena { flex: 6; position: relative; background-color: #8fb88b; background-image: url('https://placehold.co/800x400/8fb88b/8fb88b?text='); background-size: cover; border-bottom: 1px solid #111; }
         .turn-box { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.7); color: #333; padding: 2px 8px; border: 1px solid #999; border-radius: 4px; font-weight: bold; font-size: 14px; z-index: 20;}
 
@@ -138,33 +128,22 @@
         .hp-bar-bg { background: #555; height: 6px; width: 100%; margin-top: 4px; border-radius: 3px; overflow: hidden; border: 1px solid #111;}
         .hp-bar-fill { background: #48c774; height: 100%; width: 100%; transition: width 0.3s; }
 
-        /* Controles de Batalla */
         #controls { flex: 4; background: #dedede; padding: 10px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #fff;}
         .controls-header { display: flex; justify-content: space-between; font-size: 12px; color: #333; }
         .controls-header strong { color: #000; }
-        
         .timer-btn { background: #885555; color: white; border: 1px solid #aa6666; padding: 2px 10px; border-radius: 3px; cursor: pointer; font-size: 11px;}
 
-        /* Cuadrícula de Ataques */
         .moves-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 5px; }
-        .move-btn { 
-            background: linear-gradient(to bottom, #f9f9f9, #e5e5e5); border: 1px solid #aaa; border-radius: 3px; 
-            padding: 8px; cursor: pointer; text-align: center; color: #333; position: relative; font-weight: bold; 
-            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-        }
+        .move-btn { background: linear-gradient(to bottom, #f9f9f9, #e5e5e5); border: 1px solid #aaa; border-radius: 3px; padding: 8px; cursor: pointer; text-align: center; color: #333; position: relative; font-weight: bold; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
         .move-btn:hover:not(:disabled) { background: linear-gradient(to bottom, #fff, #f0f0f0); }
         .move-type { position: absolute; bottom: 4px; left: 8px; font-size: 9px; font-weight: normal; color: #666; text-transform: uppercase;}
         .move-sp { position: absolute; bottom: 4px; right: 8px; font-size: 9px; font-weight: normal; color: #666;}
         
         .switch-title { font-size: 12px; color: #555; margin-bottom: 2px;}
         .switch-row { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px;}
-        .switch-btn { 
-            background: linear-gradient(to bottom, #f9f9f9, #e5e5e5); border: 1px solid #aaa; border-radius: 3px; 
-            padding: 4px 10px; cursor: pointer; font-size: 11px; color: #333; box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-        }
+        .switch-btn { background: linear-gradient(to bottom, #f9f9f9, #e5e5e5); border: 1px solid #aaa; border-radius: 3px; padding: 4px 10px; cursor: pointer; font-size: 11px; color: #333; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
         .switch-btn:hover:not(:disabled) { background: linear-gradient(to bottom, #fff, #f0f0f0); }
 
-        /* Log de Batalla */
         #log-header { padding: 8px; background: #222; border-bottom: 1px solid #111; text-align: right; }
         #log-header button { background: #444; color: #eee; border: 1px solid #666; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 11px; }
         #log-content { flex-grow: 1; padding: 15px; overflow-y: auto; font-size: 13px; line-height: 1.4; color: #ccc; }
@@ -178,9 +157,9 @@
 
     <div id="top-bar">
         <div class="tabs-container">
-            <button class="tab-btn active" id="tab-btn-inicio" onclick="cambiarPestaña('inicio')">Home</button>
-            <button class="tab-btn" id="tab-btn-teambuilder" onclick="cambiarPestaña('teambuilder')">Teambuilder</button>
-            <button class="tab-btn" id="tab-btn-batalla" onclick="cambiarPestaña('batalla')" style="display: none; color: #ffaa99;">Battle</button>
+            <button class="tab-btn active" id="tab-btn-inicio" onclick="cambiarTab('inicio')">Home</button>
+            <button class="tab-btn" id="tab-btn-teambuilder" onclick="cambiarTab('teambuilder')">Teambuilder</button>
+            <button class="tab-btn" id="tab-btn-batalla" onclick="cambiarTab('batalla')" style="display: none; color: #ffaa99;">Battle</button>
         </div>
         <div class="user-info">
             <span id="username-display">Guest</span>
@@ -190,12 +169,10 @@
     <div id="main-content">
         
         <div id="pantalla-inicio" class="pantalla active">
-            
             <div id="home-left" class="home-col">
                 <div class="logo-container" style="text-align: left; margin-bottom: 10px;">
-                    <img src="https://play.pokemonshowdown.com/pokemonshowdownbeta.png" alt="Logo Placeholder" style="max-width: 100%; opacity: 0.8; filter: grayscale(100%);">
+                    <img src="https://play.pokemonshowdown.com/pokemonshowdownbeta.png" alt="Logo" style="max-width: 100%; opacity: 0.8; filter: grayscale(100%);">
                 </div>
-
                 <div class="matchmaking-box">
                     <div class="ps-select-group">
                         <label>Format:</label>
@@ -205,19 +182,14 @@
                         <label>Team:</label>
                         <select disabled><option>Random team</option></select>
                     </div>
-                    
                     <label style="font-size: 11px; margin-top: 5px;"><input type="checkbox" disabled> Don't allow spectators</label>
-                    
                     <button id="btn-find-battle" class="ps-button big-battle-btn">
                         Battle!<br>
                         <small>Find a random opponent</small>
                     </button>
-                    
-                    <button class="ps-button menu-btn" onclick="cambiarPestaña('teambuilder')">Teambuilder</button>
+                    <button class="ps-button menu-btn" onclick="cambiarTab('teambuilder')">Teambuilder</button>
                     <button class="ps-button menu-btn" disabled>Ladder</button>
                     <button class="ps-button menu-btn" disabled>Tournaments</button>
-                    <button class="ps-button menu-btn" disabled>Watch a battle</button>
-                    <button class="ps-button menu-btn" disabled>Find a user</button>
                 </div>
             </div>
 
@@ -226,9 +198,7 @@
                     <div class="news-header">News</div>
                     <div class="news-content">
                         <h4>Welcome to Persona Showdown</h4>
-                        <p>This is the Alpha Prototype.<br><br>The server is currently running on Railway. Matchmaking is active. Select your format on the left and click Battle to test the combat system.</p>
-                        <br>
-                        <p style="color: #aaa; font-style: italic;">— System Admin</p>
+                        <p>This is the Alpha Prototype. The server is currently running on Railway.</p>
                     </div>
                 </div>
             </div>
@@ -259,7 +229,6 @@
             <div id="left-pane">
                 <div id="arena">
                     <div class="turn-box">Turn <span id="ui-turn">1</span></div>
-                    
                     <div class="battler" id="opponent-side">
                         <div class="hp-box">
                             <span id="name-opp">Jiraiya</span> <span style="float:right; font-weight:normal;" id="porcentaje-opp">100%</span>
@@ -268,7 +237,6 @@
                         </div>
                         <img src="https://i.ibb.co/hZ2vPj9/jiraiya.png" class="sprite" id="sprite-opp">
                     </div>
-
                     <div class="battler" id="player-side">
                         <div class="hp-box">
                             <span id="name-p1">Izanagi</span> <span style="float:right; font-weight:normal;" id="porcentaje-p1">100%</span>
@@ -284,11 +252,9 @@
                         <div>What will <strong id="ui-name-p1">...</strong> do? <span style="background:#fff; padding:1px 4px; border: 1px solid #aaa; border-radius:2px; margin-left:5px;">HP <span id="ui-hp-num">.../...</span></span></div>
                         <button class="timer-btn">Timer</button>
                     </div>
-
                     <div class="moves-grid">
                         <div style="color: #666; padding: 10px;">Esperando partida...</div>
                     </div>
-
                     <div class="switch-title">Switch</div>
                     <div class="switch-row">
                         <button class="switch-btn ps-button">Izanagi</button>
@@ -301,12 +267,10 @@
                 <div id="log-header">
                     <button>Battle Options</button>
                 </div>
-                
                 <div id="log-content">
                     <div style="color: #888;">Format:<br><strong>[Gen 5 Persona] OU</strong></div><br>
                     <div id="status-message" style="color: cyan; margin-bottom: 10px;">Esperando rival...</div>
                 </div>
-
                 <div id="chat-input">
                     <input type="text" id="chat-textfield" placeholder="Chat here...">
                 </div>
@@ -316,9 +280,12 @@
     </div>
 
     <script>
-        function cambiarPestaña(pantallaId) {
+        // Función principal de navegación
+        function cambiarTab(pantallaId) {
+            console.log("Cambiando pestaña a:", pantallaId);
             document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
             document.getElementById(`pantalla-${pantallaId}`).classList.add('active');
             document.getElementById(`tab-btn-${pantallaId}`).classList.add('active');
         }
@@ -327,9 +294,10 @@
         const ws = new WebSocket(SERVER_URL);
         let miRol = null;
 
+        // Evento del botón Battle!
         document.getElementById('btn-find-battle').addEventListener('click', () => {
             document.getElementById('tab-btn-batalla').style.display = 'inline-block';
-            cambiarPestaña('batalla');
+            cambiarTab('batalla');
             if(ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({ type: 'SEARCH_MATCH' }));
             }
