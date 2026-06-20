@@ -179,7 +179,7 @@
 
     <!-- LÓGICA DE CONEXIÓN ONLINE -->
     <script>
-        // Apunta directamente a tu servidor activo en Railway
+        // Dirección de tu servidor en Railway activa en internet
         const SERVER_URL = 'wss://persona-showdown-production.up.railway.app'; 
         const ws = new WebSocket(SERVER_URL);
 
@@ -188,15 +188,17 @@
 
         function escribirLog(mensaje) {
             const log = document.getElementById("log-content");
-            log.innerHTML += `<div>${mensaje}</div>`;
-            log.scrollTop = log.scrollHeight;
+            if (log) {
+                log.innerHTML += `<div>${mensaje}</div>`;
+                log.scrollTop = log.scrollHeight;
+            }
         }
 
         function actualizarBarras(gameState) {
             localGameState = gameState;
             document.getElementById("ui-turn").innerText = gameState.turn;
 
-            // Sincronizar vidas basadas en el Servidor
+            // Sincronizar vida de P1 (Izanagi) basado en lo que calcula el servidor
             let pct1 = (gameState.p1.hp / gameState.p1.hpMax) * 100;
             document.getElementById("bar-p1").style.width = pct1 + "%";
             document.getElementById("porcentaje-p1").innerText = Math.ceil(pct1) + "%";
@@ -204,6 +206,7 @@
             if(pct1 < 25) document.getElementById("bar-p1").style.background = "#ff4444";
             else document.getElementById("bar-p1").style.background = "#48c774";
 
+            // Sincronizar vida de P2 (Jiraiya) basado en lo que calcula el servidor
             let pct2 = (gameState.p2.hp / gameState.p2.hpMax) * 100;
             document.getElementById("bar-opp").style.width = pct2 + "%";
             document.getElementById("porcentaje-opp").innerText = Math.ceil(pct2) + "%";
@@ -211,17 +214,19 @@
             else document.getElementById("bar-opp").style.background = "#48c774";
         }
 
+        // Evento cuando la página web se conecta exitosamente a Railway
         ws.onopen = () => {
-            escribirLog(`<span style="color: green; font-weight: bold;">[Sistema]: Conectado exitosamente al servidor de combate.</span>`);
+            escribirLog(`<span style="color: green; font-weight: bold;">[Sistema]: Conectado exitosamente al servidor de combate en la nube.</span>`);
         };
 
+        // Escuchar las respuestas del servidor
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
 
             if (data.type === 'INIT') {
                 miNumeroJugador = data.playerNum;
                 document.getElementById("log-header").innerHTML = `<button>You are Player ${miNumeroJugador}</button>`;
-                escribirLog(`Battle started! Te has unido como <strong>Player ${miNumeroJugador}</strong>.`);
+                escribirLog(`Battle started! Te has unido al servidor como <strong>Player ${miNumeroJugador}</strong>.`);
                 actualizarBarras(data.gameState);
             }
 
@@ -250,11 +255,13 @@
             }
         };
 
+        // Función que se activa al hacer clic en los botones de ataque
         function ejecutarTurno(nombreAtaque, minDmg, maxDmg, tipoAtaque) {
             if (!localGameState) return;
             const miPersona = localGameState[`p${miNumeroJugador}`];
             if (miPersona.hp === 0) return;
 
+            // Enviar la acción empaquetada hacia Railway
             const actionPayload = {
                 type: 'ATTACK',
                 nombreAtaque: nombreAtaque,
@@ -265,6 +272,126 @@
 
             ws.send(JSON.stringify(actionPayload));
         }
+<script>
+        // Variables globales de la batalla
+        let turnoActual = 1;
+
+        // Base de datos de los Personas
+        let p1 = { nombre: "Izanagi", hpMax: 150, hp: 150, debilidad: "Wind" };
+        let opp = { nombre: "Jiraiya", hpMax: 120, hp: 120, debilidad: "Electric" };
+
+        // Función para escribir en la caja de la derecha
+        function escribirLog(mensaje) {
+            const log = document.getElementById("log-content");
+            if (log) {
+                log.innerHTML += `<div>${mensaje}</div>`;
+                log.scrollTop = log.scrollHeight;
+            }
+        }
+
+        // Función para actualizar los porcentajes y colores de las barras
+        function actualizarBarras() {
+            // Actualiza Izanagi
+            let pct1 = (p1.hp / p1.hpMax) * 100;
+            document.getElementById("bar-p1").style.width = pct1 + "%";
+            document.getElementById("porcentaje-p1").innerText = Math.ceil(pct1) + "%";
+            document.getElementById("ui-hp-num").innerText = `${p1.hp}/${p1.hpMax}`;
+            if(pct1 < 25) document.getElementById("bar-p1").style.background = "#ff4444";
+            else document.getElementById("bar-p1").style.background = "#48c774";
+
+            // Actualiza Jiraiya
+            let pct2 = (opp.hp / opp.hpMax) * 100;
+            document.getElementById("bar-opp").style.width = pct2 + "%";
+            document.getElementById("porcentaje-opp").innerText = Math.ceil(pct2) + "%";
+            if(pct2 < 25) document.getElementById("bar-opp").style.background = "#ff4444";
+            else document.getElementById("bar-opp").style.background = "#48c774";
+        }
+
+        // Evita que presiones botones múltiples veces seguidas
+        function setBotonesEstado(estado) {
+            const botones = document.querySelectorAll('.move-btn');
+            botones.forEach(btn => btn.disabled = estado);
+        }
+
+        // Motor principal: Esto pasa cuando haces clic en un botón
+        function ejecutarTurno(nombreAtaque, minDmg, maxDmg, tipoAtaque) {
+            if (p1.hp === 0 || opp.hp === 0) return;
+
+            // Bloqueamos la interfaz mientras ocurre la animación del turno
+            setBotonesEstado(true);
+
+            escribirLog(`<div class="log-turn">Turn ${turnoActual}</div>`);
+            escribirLog(`<b>${p1.nombre}</b> used <b>${nombreAtaque}</b>!`);
+
+            // 1. TURNO DEL JUGADOR
+            if (minDmg > 0) {
+                // Generar daño aleatorio entre el mínimo y el máximo
+                let daño = Math.floor(Math.random() * (maxDmg - minDmg + 1)) + minDmg;
+                
+                // ¡Mecánica de Debilidad de Persona!
+                if (tipoAtaque === opp.debilidad) {
+                    daño = daño * 2;
+                    escribirLog(`<span style="color:#ffee00; font-weight:bold;">¡WEAK!</span> (Opposing ${opp.nombre} is weak to ${tipoAtaque})`);
+                }
+                
+                opp.hp -= daño;
+                if (opp.hp < 0) opp.hp = 0;
+                
+                let pctPerdido = Math.ceil((daño / opp.hpMax) * 100);
+                escribirLog(`<span class="log-damage">(The opposing ${opp.nombre} lost ${pctPerdido}% of its health!)</span>`);
+            } else {
+                escribirLog(`But nothing happened! (Support skill not fully programmed yet)`);
+            }
+
+            actualizarBarras();
+
+            // Verificar si ganaste
+            if (opp.hp === 0) {
+                escribirLog(`<br><b style="color: #48c774;">¡The opposing ${opp.nombre} fainted! You won!</b>`);
+                return; // Corta la ejecución para que el enemigo no ataque muerto
+            }
+
+            // 2. TURNO DEL ENEMIGO (Inteligencia Artificial Básica)
+            // Usamos un pequeño retraso (1.2s) para que se sienta como un juego real
+            setTimeout(() => {
+                let nombreAtaqueEnemigo = "Garu";
+                let tipoAtaqueEnemigo = "Wind";
+                escribirLog(`The opposing <b>${opp.nombre}</b> used <b>${nombreAtaqueEnemigo}</b>!`);
+                
+                let dañoEnemigo = Math.floor(Math.random() * (25 - 15 + 1)) + 15;
+                
+                // El enemigo explota la debilidad de Izanagi al viento
+                if (tipoAtaqueEnemigo === p1.debilidad) {
+                    dañoEnemigo = dañoEnemigo * 2;
+                    escribirLog(`<span style="color:#ffee00; font-weight:bold;">¡WEAK!</span> (${p1.nombre} is weak to ${tipoAtaqueEnemigo})`);
+                }
+
+                p1.hp -= dañoEnemigo;
+                if (p1.hp < 0) p1.hp = 0;
+                
+                let pctPerdidoEnemigo = Math.ceil((dañoEnemigo / p1.hpMax) * 100);
+                escribirLog(`<span class="log-damage">(${p1.nombre} lost ${pctPerdidoEnemigo}% of its health!)</span>`);
+                
+                actualizarBarras();
+
+                // Verificar si perdiste
+                if (p1.hp === 0) {
+                    escribirLog(`<br><b style="color: #ff4444;">¡${p1.nombre} fainted! You lost...</b>`);
+                } else {
+                    // Si ambos siguen vivos, pasamos al siguiente turno
+                    turnoActual++;
+                    document.getElementById("ui-turn").innerText = turnoActual;
+                    setBotonesEstado(false); // Reactivar botones para el jugador
+                }
+            }, 1200);
+        }
+
+        // Al cargar la página por primera vez
+        window.onload = () => {
+            document.getElementById("log-header").innerHTML = `<button>Local Battle (Offline)</button>`;
+            escribirLog(`Battle started! Modo entrenamiento contra la IA cargado.`);
+            actualizarBarras();
+        };
     </script>
 </body>
 </html>
