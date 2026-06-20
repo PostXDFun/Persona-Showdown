@@ -35,14 +35,13 @@
         .ps-button:disabled { background: #222; color: #666; cursor: not-allowed; border-color: #333; }
 
         /* =========================================
-            TOP BAR (PESTAÑAS)
+            TOP BAR
             ========================================= */
         #top-bar { 
             height: 35px; background: rgba(0, 0, 0, 0.6); display: flex; align-items: flex-end; 
             padding: 0 10px; border-bottom: 1px solid #444; flex-shrink: 0;
             justify-content: space-between;
         }
-        
         .tabs-container { display: flex; gap: 2px; }
         .tab-btn {
             background: rgba(30, 30, 30, 0.8); color: #aaa; border: 1px solid #111; border-bottom: none;
@@ -50,7 +49,6 @@
             font-size: 13px; transition: background 0.2s, color 0.2s;
             height: 28px;
         }
-        .tab-btn:hover { background: rgba(50, 50, 50, 0.9); color: #fff; }
         .tab-btn.active { background: rgba(0, 0, 0, 0.5); color: #fff; height: 30px; font-weight: bold; border: 1px solid #555; border-bottom: none; }
         .user-info { color: #88aadd; font-size: 13px; padding-bottom: 6px; font-weight: bold; }
 
@@ -76,10 +74,6 @@
         
         .big-battle-btn { width: 100%; padding: 12px 5px; font-size: 18px; font-weight: bold; margin: 10px 0; text-align: center; }
         .menu-btn { width: 100%; padding: 6px; text-align: center; font-weight: bold; }
-
-        .news-box { background: rgba(30, 30, 30, 0.8); border: 1px solid #444; border-radius: 3px; color: #ddd; }
-        .news-header { background: rgba(0, 0, 0, 0.3); padding: 5px 10px; font-weight: bold; border-bottom: 1px solid #444; font-size: 11px;}
-        .news-content { padding: 10px; font-size: 12px; }
 
         #lobby-header { padding: 8px 10px; background: rgba(0,0,0,0.5); border-bottom: 1px solid #222; color: #fff; font-size: 14px; font-weight: bold; }
         #lobby-chat-content { flex-grow: 1; padding: 10px; overflow-y: auto; font-size: 13px; color: #ccc; height: 300px; }
@@ -108,14 +102,12 @@
         /* HUD OSCURO */
         #controls { flex: 4; background: #222; padding: 10px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #444; }
         .controls-header { display: flex; justify-content: space-between; font-size: 12px; color: #ccc; }
-        .controls-header strong { color: #fff; }
         .timer-btn { background: #555; color: #eee; border: 1px solid #777; padding: 2px 10px; border-radius: 3px; cursor: pointer; font-size: 11px;}
 
         .moves-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
         .move-btn { background: #333; border: 1px solid #555; border-radius: 3px; padding: 8px; cursor: pointer; color: #eee; font-weight: bold; }
-        .move-btn:hover:not(:disabled) { background: #444; }
-        .move-type { font-size: 9px; color: #aaa; text-transform: uppercase; display: block; }
-        .move-sp { font-size: 9px; color: #888; }
+        .move-type { font-size: 9px; color: #aaa; text-transform: uppercase; }
+        .move-sp { font-size: 9px; color: #888; margin-left: 5px; }
         
         .switch-title { font-size: 12px; color: #aaa; margin-top: 5px; }
         .switch-row { display: flex; gap: 5px; }
@@ -150,21 +142,11 @@
                         <label>Team:</label>
                         <select disabled><option>Random team</option></select>
                     </div>
-                    <button id="btn-find-battle" class="ps-button big-battle-btn">Battle!<br><small style="font-size: 10px; font-weight: normal; color: #aaa;">Find a random opponent</small></button>
+                    <button id="btn-find-battle" class="ps-button big-battle-btn">Battle!</button>
                     <button class="ps-button menu-btn" onclick="cambiarTab('teambuilder')">Teambuilder</button>
                 </div>
             </div>
-
-            <div id="home-mid" class="home-col">
-                <div class="news-box">
-                    <div class="news-header">News</div>
-                    <div class="news-content">
-                        <h4>Welcome to Persona Showdown</h4>
-                        <p>Alpha Prototype running on Railway.</p>
-                    </div>
-                </div>
-            </div>
-
+            <div id="home-mid" class="home-col"></div>
             <div id="home-right" class="home-col">
                 <div id="lobby-header">Lobby</div>
                 <div id="lobby-chat-content"></div>
@@ -173,7 +155,7 @@
         </div>
 
         <div id="pantalla-teambuilder" class="pantalla">
-            <div style="padding: 20px;"><h2>Teambuilder</h2><p>En construcción...</p></div>
+            <div style="padding: 20px;"><h2>Teambuilder</h2></div>
         </div>
 
         <div id="pantalla-batalla" class="pantalla">
@@ -199,7 +181,6 @@
                     <div class="switch-title">Switch</div>
                     <div class="switch-row">
                         <button class="switch-btn">Izanagi</button>
-                        <button class="switch-btn" style="opacity: 0.5;">Jack Frost</button>
                     </div>
                 </div>
             </div>
@@ -213,28 +194,86 @@
     </div>
 
     <script>
-        function cambiarTab(id) {
+        function cambiarTab(pantallaId) {
             document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`pantalla-${id}`).classList.add('active');
-            document.getElementById(`tab-btn-${id}`).classList.add('active');
+            document.getElementById(`pantalla-${pantallaId}`).classList.add('active');
+            document.getElementById(`tab-btn-${pantallaId}`).classList.add('active');
         }
 
-        const ws = new WebSocket('wss://persona-showdown-production.up.railway.app');
-        
+        const SERVER_URL = 'wss://persona-showdown-production.up.railway.app';
+        const ws = new WebSocket(SERVER_URL);
+        let miRol = null;
+
         document.getElementById('btn-find-battle').addEventListener('click', () => {
             document.getElementById('tab-btn-batalla').style.display = 'inline-block';
             cambiarTab('batalla');
             if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'SEARCH_MATCH' }));
         });
 
-        // Funciones de lógica (se mantienen igual)
-        ws.onmessage = (e) => {
-            const data = JSON.parse(e.data);
-            if (data.type === 'UPDATE_STATE') {
-                // Actualizar UI de batalla...
+        function habilitarControles(habilitar) {
+            document.querySelectorAll('.move-btn, .switch-btn').forEach(btn => btn.disabled = !habilitar);
+        }
+
+        function escribirLogBatalla(mensaje) {
+            const log = document.getElementById("log-content");
+            log.innerHTML += `<div>${mensaje}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function escribirLogLobby(mensaje) {
+            const lobbyLog = document.getElementById("lobby-chat-content");
+            lobbyLog.innerHTML += `<div>${mensaje}</div>`;
+            lobbyLog.scrollTop = lobbyLog.scrollHeight;
+        }
+
+        function renderizarAtaques(moves) {
+            const grid = document.querySelector('.moves-grid');
+            grid.innerHTML = ''; 
+            moves.forEach(move => {
+                grid.innerHTML += `
+                    <button class="move-btn" onclick="enviarAccion('${move.name}', '${move.type}')">
+                        ${move.name} <span class="move-type">${move.type}</span> <span class="move-sp">${move.sp}</span>
+                    </button>
+                `;
+            });
+        }
+
+        function dibujarBarras(state) {
+            if (miRol) {
+                document.getElementById("ui-name-p1").innerText = state[miRol].name;
+                renderizarAtaques(state[miRol].moves);
+            }
+            let pct1 = (state.p1.hp / state.p1.hpMax) * 100;
+            document.getElementById("bar-p1").style.width = pct1 + "%";
+            document.getElementById("porcentaje-p1").innerText = Math.ceil(pct1) + "%";
+            
+            let pct2 = (state.p2.hp / state.p2.hpMax) * 100;
+            document.getElementById("bar-opp").style.width = pct2 + "%";
+            document.getElementById("porcentaje-opp").innerText = Math.ceil(pct2) + "%";
+            document.getElementById("ui-turn").innerText = state.turnCount;
+            habilitarControles(state.status === 'PLAYING'); 
+        }
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'INIT') {
+                miRol = data.role;
+            } else if (data.type === 'BATTLE_LOG') {
+                escribirLogBatalla(data.message);
+            } else if (data.type === 'LOBBY_LOG') {
+                escribirLogLobby(data.message);
+            } else if (data.type === 'UPDATE_STATE') {
+                dibujarBarras(data.state);
             }
         };
+
+        function enviarAccion(nombreAtaque, tipoAtaque) {
+            if(ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'ACTION', skill: nombreAtaque, skillType: tipoAtaque }));
+                habilitarControles(false);
+            }
+        }
     </script>
 </body>
 </html>
