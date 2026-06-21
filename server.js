@@ -14,11 +14,12 @@ const wss = new WebSocketServer({ server });
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 let allClients = [];
-let room = {
+   let room = {
     status: 'WAITING',
     players: [],
     p1: { 
         ws: null, name: "Izanagi", hpMax: 150, hp: 150, weakness: "Wind", action: null,
+        teamState: {}, // <--- AÑADE ESTO
         moves: [
             { name: "Zio", type: "Electric", sp: "4 SP" },
             { name: "Cleave", type: "Physical", sp: "10% HP" },
@@ -28,6 +29,7 @@ let room = {
     },
     p2: { 
         ws: null, name: "Jiraiya", hpMax: 120, hp: 120, weakness: "Electric", action: null,
+        teamState: {}, // <--- AÑADE ESTO
         moves: [
             { name: "Garu", type: "Wind", sp: "3 SP" },
             { name: "Brave Blade", type: "Physical", sp: "20% HP" },
@@ -61,65 +63,35 @@ function broadcastLobbyLog(htmlMessage) {
 // --- FUNCIÓN PARA ACTUALIZAR STATS AL CAMBIAR ---
 function efectuarCambio(jugador, nuevaPersona) {
     broadcastBattleLog(`<b>¡Adelante, ${nuevaPersona}!</b>`);
+    
+    // 1. GUARDAR LA VIDA DE LA PERSONA SALIENTE
+    jugador.teamState[jugador.name] = jugador.hp;
+
+    // 2. ACTUALIZAR EL NOMBRE A LA NUEVA PERSONA
     jugador.name = nuevaPersona;
     
-    // El compendio completo con los 4 ataques para cada Persona
     const SERVER_COMPENDIUM = {
-        "Izanagi": { 
-            hpMax: 150, weakness: "Wind", 
-            moves: [
-                { name: "Zio", type: "Electric", sp: "4 SP" }, 
-                { name: "Cleave", type: "Physical", sp: "10% HP" },
-                { name: "Rakunda", type: "Support", sp: "8 SP" },
-                { name: "Tarukaja", type: "Support", sp: "8 SP" }
-            ] 
-        },
-        "Jiraiya": { 
-            hpMax: 120, weakness: "Electric", 
-            moves: [
-                { name: "Garu", type: "Wind", sp: "3 SP" }, 
-                { name: "Brave Blade", type: "Physical", sp: "20% HP" },
-                { name: "Sukukaja", type: "Support", sp: "12 SP" },
-                { name: "Dekunda", type: "Support", sp: "10 SP" }
-            ] 
-        },
-        "Jack Frost": { 
-            hpMax: 130, weakness: "Fire", 
-            moves: [
-                { name: "Bufu", type: "Ice", sp: "4 SP" }, 
-                { name: "Mabufu", type: "Ice", sp: "10 SP" },
-                { name: "Rakukaja", type: "Support", sp: "8 SP" },
-                { name: "Lunge", type: "Physical", sp: "10% HP" }
-            ] 
-        },
-        "Thanatos": { 
-            hpMax: 200, weakness: "Light", 
-            moves: [
-                { name: "Megidolaon", type: "Almighty", sp: "30 SP" }, 
-                { name: "Maeigaon", type: "Curse", sp: "22 SP" },
-                { name: "Brave Blade", type: "Physical", sp: "20% HP" },
-                { name: "Mind Charge", type: "Support", sp: "15 SP" }
-            ] 
-        },
-        "Arsene": { 
-            hpMax: 110, weakness: "Ice", 
-            moves: [
-                { name: "Eiha", type: "Curse", sp: "4 SP" }, 
-                { name: "Cleave", type: "Physical", sp: "10% HP" },
-                { name: "Sukunda", type: "Support", sp: "8 SP" },
-                { name: "Dream Needle", type: "Physical", sp: "12% HP" }
-            ] 
-        },
-        "Apollo": { 
-            hpMax: 160, weakness: "Ice", 
-            moves: [
-                { name: "Agi", type: "Fire", sp: "4 SP" }, 
-                { name: "Maragi", type: "Fire", sp: "10 SP" },
-                { name: "Tarukaja", type: "Support", sp: "8 SP" },
-                { name: "Nova Cygnus", type: "Almighty", sp: "50 SP" }
-            ] 
-        }
+        "Izanagi": { hpMax: 150, weakness: "Wind", moves: [{ name: "Zio", type: "Electric", sp: "4 SP" }, { name: "Cleave", type: "Physical", sp: "10% HP" }, { name: "Rakunda", type: "Support", sp: "8 SP" }, { name: "Tarukaja", type: "Support", sp: "8 SP" }] },
+        "Jiraiya": { hpMax: 120, weakness: "Electric", moves: [{ name: "Garu", type: "Wind", sp: "3 SP" }, { name: "Brave Blade", type: "Physical", sp: "20% HP" }, { name: "Sukukaja", type: "Support", sp: "12 SP" }, { name: "Dekunda", type: "Support", sp: "10 SP" }] },
+        "Jack Frost": { hpMax: 130, weakness: "Fire", moves: [{ name: "Bufu", type: "Ice", sp: "4 SP" }, { name: "Mabufu", type: "Ice", sp: "10 SP" }, { name: "Rakukaja", type: "Support", sp: "8 SP" }, { name: "Lunge", type: "Physical", sp: "10% HP" }] },
+        "Thanatos": { hpMax: 200, weakness: "Light", moves: [{ name: "Megidolaon", type: "Almighty", sp: "30 SP" }, { name: "Maeigaon", type: "Curse", sp: "22 SP" }, { name: "Brave Blade", type: "Physical", sp: "20% HP" }, { name: "Mind Charge", type: "Support", sp: "15 SP" }] },
+        "Arsene": { hpMax: 110, weakness: "Ice", moves: [{ name: "Eiha", type: "Curse", sp: "4 SP" }, { name: "Cleave", type: "Physical", sp: "10% HP" }, { name: "Sukunda", type: "Support", sp: "8 SP" }, { name: "Dream Needle", type: "Physical", sp: "12% HP" }] },
+        "Apollo": { hpMax: 160, weakness: "Ice", moves: [{ name: "Agi", type: "Fire", sp: "4 SP" }, { name: "Maragi", type: "Fire", sp: "10 SP" }, { name: "Tarukaja", type: "Support", sp: "8 SP" }, { name: "Nova Cygnus", type: "Almighty", sp: "50 SP" }] }
     };
+
+    if (SERVER_COMPENDIUM[nuevaPersona]) {
+        jugador.hpMax = SERVER_COMPENDIUM[nuevaPersona].hpMax;
+        jugador.weakness = SERVER_COMPENDIUM[nuevaPersona].weakness;
+        jugador.moves = SERVER_COMPENDIUM[nuevaPersona].moves;
+        
+        // 3. CARGAR LA VIDA GUARDADA (O dársela al máximo si es su primera vez en batalla)
+        if (jugador.teamState[nuevaPersona] !== undefined) {
+            jugador.hp = jugador.teamState[nuevaPersona];
+        } else {
+            jugador.hp = jugador.hpMax;
+        }
+    }
+}
 
     if (SERVER_COMPENDIUM[nuevaPersona]) {
         jugador.hpMax = SERVER_COMPENDIUM[nuevaPersona].hpMax;
@@ -127,7 +99,7 @@ function efectuarCambio(jugador, nuevaPersona) {
         jugador.weakness = SERVER_COMPENDIUM[nuevaPersona].weakness;
         jugador.moves = SERVER_COMPENDIUM[nuevaPersona].moves;
     }
-}
+
 
 function ejecutarAtaque(atacante, defensor, accion) {
     if (atacante.hp <= 0) return; 
@@ -179,15 +151,23 @@ async function resolverTurno() {
     room.turnCount++;
 }
 
+// ... (arriba termina resolverTurno)
+
 function resetearSala() {
     room.p1.hp = room.p1.hpMax;
     room.p2.hp = room.p2.hpMax;
     room.turnCount = 1;
     room.p1.action = null;
     room.p2.action = null;
+    
+    // Limpiamos la mochila para la nueva batalla
+    room.p1.teamState = {}; 
+    room.p2.teamState = {};
 }
 
+// --- CONEXIONES WEBSOCKET ---
 wss.on('connection', (ws) => {
+// ...
     allClients.push(ws);
     ws.send(JSON.stringify({ type: 'LOBBY_LOG', message: '<span style="color: cyan;">Conectado al servidor central. Presiona "Battle!" para buscar partida.</span>' }));
 
