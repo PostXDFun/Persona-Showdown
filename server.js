@@ -14,12 +14,12 @@ const wss = new WebSocketServer({ server });
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 let allClients = [];
-   let room = {
+let room = {
     status: 'WAITING',
     players: [],
     p1: { 
         ws: null, name: "Izanagi", hpMax: 150, hp: 150, weakness: "Wind", action: null,
-        teamState: {}, // <--- AÑADE ESTO
+        teamState: {}, 
         moves: [
             { name: "Zio", type: "Electric", sp: "4 SP" },
             { name: "Cleave", type: "Physical", sp: "10% HP" },
@@ -29,7 +29,7 @@ let allClients = [];
     },
     p2: { 
         ws: null, name: "Jiraiya", hpMax: 120, hp: 120, weakness: "Electric", action: null,
-        teamState: {}, // <--- AÑADE ESTO
+        teamState: {}, 
         moves: [
             { name: "Garu", type: "Wind", sp: "3 SP" },
             { name: "Brave Blade", type: "Physical", sp: "20% HP" },
@@ -93,14 +93,6 @@ function efectuarCambio(jugador, nuevaPersona) {
     }
 }
 
-    if (SERVER_COMPENDIUM[nuevaPersona]) {
-        jugador.hpMax = SERVER_COMPENDIUM[nuevaPersona].hpMax;
-        jugador.hp = SERVER_COMPENDIUM[nuevaPersona].hpMax; // Nota: Seguimos curando al cambiar por ahora
-        jugador.weakness = SERVER_COMPENDIUM[nuevaPersona].weakness;
-        jugador.moves = SERVER_COMPENDIUM[nuevaPersona].moves;
-    }
-
-
 function ejecutarAtaque(atacante, defensor, accion) {
     if (atacante.hp <= 0) return; 
     broadcastBattleLog(`<b>${atacante.name}</b> used <b>${accion.skill}</b>!`);
@@ -151,8 +143,6 @@ async function resolverTurno() {
     room.turnCount++;
 }
 
-// ... (arriba termina resolverTurno)
-
 function resetearSala() {
     room.p1.hp = room.p1.hpMax;
     room.p2.hp = room.p2.hpMax;
@@ -167,7 +157,6 @@ function resetearSala() {
 
 // --- CONEXIONES WEBSOCKET ---
 wss.on('connection', (ws) => {
-// ...
     allClients.push(ws);
     ws.send(JSON.stringify({ type: 'LOBBY_LOG', message: '<span style="color: cyan;">Conectado al servidor central. Presiona "Battle!" para buscar partida.</span>' }));
 
