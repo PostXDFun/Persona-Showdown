@@ -128,54 +128,50 @@
         .hp-bar-bg { background: #555; height: 6px; width: 100%; margin-top: 4px; border-radius: 3px; overflow: hidden; border: 1px solid #111;}
         .hp-bar-fill { background: #48c774; height: 100%; width: 100%; transition: width 0.3s; }
 
-#controls {flex: 4; background: #222; /* Antes era #dedede */padding: 10px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #444; /* Borde más sutil */}
-.controls-header {display: flex; justify-content: space-between; font-size: 12px; color: #eee; /* Cambiado de #333 a claro */}
-
-.controls-header strong {color: #fff; /* Cambiado de #000 a blanco */}
+        #controls {flex: 4; background: #222; padding: 10px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #444; }
+        .controls-header {display: flex; justify-content: space-between; font-size: 12px; color: #eee; }
+        .controls-header strong {color: #fff; }
         .timer-btn { background: #885555; color: white; border: 1px solid #aa6666; padding: 2px 10px; border-radius: 3px; cursor: pointer; font-size: 11px;}
 
         .moves-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 5px; }
-.move-btn { 
-    background: linear-gradient(to bottom, #444, #333); /* Gradiente oscuro */
-    border: 1px solid #555; 
-    border-radius: 3px; 
-    padding: 8px; 
-    cursor: pointer; 
-    text-align: center; 
-    color: #eee; 
-    position: relative; 
-    font-weight: bold; 
-    box-shadow: 0 1px 1px rgba(0,0,0,0.3); 
-}
-
-.move-btn:hover:not(:disabled) { 
-    background: linear-gradient(to bottom, #555, #444); 
-}
-
-.move-type, .move-sp { 
-    color: #aaa; /* Texto más claro para que se lea bien sobre fondo oscuro */
-}
+        .move-btn { 
+            background: linear-gradient(to bottom, #444, #333); 
+            border: 1px solid #555; 
+            border-radius: 3px; 
+            padding: 8px; 
+            cursor: pointer; 
+            text-align: center; 
+            color: #eee; 
+            position: relative; 
+            font-weight: bold; 
+            box-shadow: 0 1px 1px rgba(0,0,0,0.3); 
+        }
+        .move-btn:hover:not(:disabled) { 
+            background: linear-gradient(to bottom, #555, #444); 
+        }
+        .move-type, .move-sp { 
+            color: #aaa; 
+        }
         
-       .switch-title { 
-    font-size: 12px; 
-    color: #aaa; /* Cambiado de #555 */
-    margin-bottom: 2px;
-}
-
-.switch-btn { 
-    background: linear-gradient(to bottom, #444, #333); 
-    border: 1px solid #555; 
-    border-radius: 3px; 
-    padding: 4px 10px; 
-    cursor: pointer; 
-    font-size: 11px; 
-    color: #eee; 
-    box-shadow: 0 1px 1px rgba(0,0,0,0.3); 
-}
-
-.switch-btn:hover:not(:disabled) { 
-    background: linear-gradient(to bottom, #555, #444); 
-}
+        .switch-title { 
+            font-size: 12px; 
+            color: #aaa; 
+            margin-bottom: 2px;
+        }
+        .switch-row { display: flex; gap: 5px; }
+        .switch-btn { 
+            background: linear-gradient(to bottom, #444, #333); 
+            border: 1px solid #555; 
+            border-radius: 3px; 
+            padding: 4px 10px; 
+            cursor: pointer; 
+            font-size: 11px; 
+            color: #eee; 
+            box-shadow: 0 1px 1px rgba(0,0,0,0.3); 
+        }
+        .switch-btn:hover:not(:disabled) { 
+            background: linear-gradient(to bottom, #555, #444); 
+        }
 
         #log-header { padding: 8px; background: #222; border-bottom: 1px solid #111; text-align: right; }
         #log-header button { background: #444; color: #eee; border: 1px solid #666; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 11px; }
@@ -247,22 +243,16 @@
         <div id="pantalla-teambuilder" class="pantalla">
             <div class="tb-header">
                 <h2>Teambuilder</h2>
+                <p style="color: #aaa; font-size: 12px;">Arma tu equipo de 3 Personas</p>
             </div>
-          <div id="pantalla-teambuilder" class="pantalla">
-    <div class="tb-header">
-        <h2>Teambuilder</h2>
-        <p style="color: #aaa; font-size: 12px;">Arma tu equipo de 3 Personas</p>
-    </div>
 
-    <div id="equipo-actual" style="display: flex; gap: 10px; margin-bottom: 20px;">
-        </div>
+            <div id="equipo-actual" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                </div>
 
-    <div style="background: rgba(0,0,0,0.5); padding: 15px; border: 1px solid #444;">
-        <h3 style="margin-bottom: 10px; color: #eee; font-size: 14px;">Compendium</h3>
-        <div id="pokedex-list" style="display: flex; flex-wrap: wrap; gap: 10px;">
-            </div>
-    </div>
-</div>
+            <div style="background: rgba(0,0,0,0.5); padding: 15px; border: 1px solid #444;">
+                <h3 style="margin-bottom: 10px; color: #eee; font-size: 14px;">Compendium</h3>
+                <div id="pokedex-list" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    </div>
             </div>
         </div>
 
@@ -298,9 +288,7 @@
                     </div>
                     <div class="switch-title">Switch</div>
                     <div class="switch-row">
-                        <button class="switch-btn ps-button">Izanagi</button>
-                        <button class="switch-btn ps-button" style="opacity: 0.5;">Jack Frost</button>
-                    </div>
+                        </div>
                 </div>
             </div>
 
@@ -320,203 +308,220 @@
 
     </div>
 
-<script>
-    // --- VARIABLES GLOBALES ---
-    const COMPENDIUM = [
-        { name: "Izanagi", type: "Electric" },
-        { name: "Jiraiya", type: "Wind" },
-        { name: "Jack Frost", type: "Ice" },
-        { name: "Thanatos", type: "Curse" },
-        { name: "Arsene", type: "Curse" },
-        { name: "Apollo", type: "Fire" }
-    ];
-    let miEquipo = [null, null, null];
+    <script>
+        // --- VARIABLES GLOBALES ---
+        const COMPENDIUM = [
+            { name: "Izanagi", type: "Electric" },
+            { name: "Jiraiya", type: "Wind" },
+            { name: "Jack Frost", type: "Ice" },
+            { name: "Thanatos", type: "Curse" },
+            { name: "Arsene", type: "Curse" },
+            { name: "Apollo", type: "Fire" }
+        ];
+        let miEquipo = [null, null, null];
 
-    // --- CONFIGURACIÓN WEBSOCKET ---
-    const SERVER_URL = 'wss://persona-showdown-production.up.railway.app';
-    const ws = new WebSocket(SERVER_URL);
-    let miRol = null;
-// Dibuja la lista de todas las Personas disponibles
-function renderizarCompendium() {
-    const list = document.getElementById('pokedex-list');
-    list.innerHTML = '';
-    
-    COMPENDIUM.forEach(p => {
-        const spriteUrl = getSpritePath(p.name); 
-        list.innerHTML += `
-            <button class="ps-button" onclick="agregarAlEquipo('${p.name}')" style="display:flex; flex-direction:column; align-items:center; width: 80px;">
-                <img src="${spriteUrl}" style="width:50px; height:50px; object-fit:contain;" onerror="this.src=''">
-                <span style="font-size: 10px; margin-top: 5px;">${p.name}</span>
-            </button>`;
-    });
-}
+        // --- CONFIGURACIÓN WEBSOCKET ---
+        const SERVER_URL = 'wss://persona-showdown-production.up.railway.app';
+        const ws = new WebSocket(SERVER_URL);
+        let miRol = null;
 
-// Dibuja los 3 espacios de tu equipo
-function renderizarEquipo() {
-    const equipoContenedor = document.getElementById('equipo-actual');
-    equipoContenedor.innerHTML = '';
-
-    for (let i = 0; i < 3; i++) {
-        const personaName = miEquipo[i];
-        if (personaName) {
-            // Si hay una Persona en este slot, mostramos su imagen y un botón para quitarla
-            const spriteUrl = getSpritePath(personaName);
-            equipoContenedor.innerHTML += `
-                <div style="width: 100px; height: 120px; background: #222; border: 1px solid #555; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
-                    <img src="${spriteUrl}" style="width: 60px; height: 60px; object-fit: contain;">
-                    <span style="font-size: 11px; margin-top: 5px; text-align: center;">${personaName}</span>
-                    <button onclick="quitarDelEquipo(${i})" style="position: absolute; top: 2px; right: 2px; background: #ff4444; border: none; color: white; border-radius: 3px; cursor: pointer; font-size: 10px; padding: 2px 5px;">X</button>
-                </div>
-            `;
-        } else {
-            // Si está vacío, mostramos un cuadro gris
-            equipoContenedor.innerHTML += `
-                <div style="width: 100px; height: 120px; background: #1a1a1a; border: 1px dashed #444; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #555; font-size: 12px;">
-                    Vacío
-                </div>
-            `;
+        // --- FUNCIONES AUXILIARES ---
+        function cambiarTab(pantallaId) {
+            document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`pantalla-${pantallaId}`).classList.add('active');
+            document.getElementById(`tab-btn-${pantallaId}`).classList.add('active');
         }
-    }
-}
-    // --- FUNCIONES AUXILIARES ---
-    function cambiarTab(pantallaId) {
-        document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`pantalla-${pantallaId}`).classList.add('active');
-        document.getElementById(`tab-btn-${pantallaId}`).classList.add('active');
-    }
 
-    function getSpritePath(name) {
-        const fileName = name.toLowerCase().replace(/\s+/g, '-');
-        return `public/sprites/${fileName}.png`;
-    }
+        function getSpritePath(name) {
+            const fileName = name.toLowerCase().replace(/\s+/g, '-');
+            return `public/sprites/${fileName}.png`;
+        }
 
-    function habilitarControles(habilitar) {
-        const botones = document.querySelectorAll('.move-btn, .switch-btn');
-        botones.forEach(btn => btn.disabled = !habilitar);
-    }
+        function habilitarControles(habilitar) {
+            const botones = document.querySelectorAll('.move-btn, .switch-btn');
+            botones.forEach(btn => btn.disabled = !habilitar);
+        }
 
-    function escribirLogBatalla(mensaje) {
-        const log = document.getElementById("log-content");
-        log.innerHTML += `<div>${mensaje}</div>`;
-        log.scrollTop = log.scrollHeight;
-    }
+        function escribirLogBatalla(mensaje) {
+            const log = document.getElementById("log-content");
+            log.innerHTML += `<div>${mensaje}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
 
-    function escribirLogLobby(mensaje) {
-        const lobbyLog = document.getElementById("lobby-chat-content");
-        lobbyLog.innerHTML += `<div>${mensaje}</div>`;
-        lobbyLog.scrollTop = lobbyLog.scrollHeight;
-    }
+        function escribirLogLobby(mensaje) {
+            const lobbyLog = document.getElementById("lobby-chat-content");
+            lobbyLog.innerHTML += `<div>${mensaje}</div>`;
+            lobbyLog.scrollTop = lobbyLog.scrollHeight;
+        }
 
-    function renderizarAtaques(moves) {
-        const grid = document.querySelector('.moves-grid');
-        grid.innerHTML = ''; 
-        moves.forEach(move => {
-            grid.innerHTML += `
-                <button class="move-btn ps-button" onclick="enviarAccion('${move.name}', '${move.type}')">
-                    ${move.name} <span class="move-type">${move.type}</span> <span class="move-sp">${move.sp}</span>
-                </button>`;
-                
+        function renderizarAtaques(moves) {
+            const grid = document.querySelector('.moves-grid');
+            grid.innerHTML = ''; 
+            moves.forEach(move => {
+                grid.innerHTML += `
+                    <button class="move-btn ps-button" onclick="enviarAccion('${move.name}', '${move.type}')">
+                        ${move.name} <span class="move-type">${move.type}</span> <span class="move-sp">${move.sp}</span>
+                    </button>`;
+            });
+        }
+
+        // --- LÓGICA DE TEAMBUILDER ---
+        function renderizarCompendium() {
+            const list = document.getElementById('pokedex-list');
+            list.innerHTML = '';
+            
+            COMPENDIUM.forEach(p => {
+                const spriteUrl = getSpritePath(p.name); 
+                list.innerHTML += `
+                    <button class="ps-button" onclick="agregarAlEquipo('${p.name}')" style="display:flex; flex-direction:column; align-items:center; width: 80px; padding: 5px;">
+                        <img src="${spriteUrl}" style="width:50px; height:50px; object-fit:contain;" onerror="this.src=''">
+                        <span style="font-size: 10px; margin-top: 5px; font-weight: bold;">${p.name}</span>
+                    </button>`;
+            });
+        }
+
+        function renderizarEquipo() {
+            const equipoContenedor = document.getElementById('equipo-actual');
+            equipoContenedor.innerHTML = '';
+
+            for (let i = 0; i < 3; i++) {
+                const personaName = miEquipo[i];
+                if (personaName) {
+                    const spriteUrl = getSpritePath(personaName);
+                    equipoContenedor.innerHTML += `
+                        <div style="width: 100px; height: 120px; background: #222; border: 1px solid #555; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+                            <img src="${spriteUrl}" style="width: 60px; height: 60px; object-fit: contain;">
+                            <span style="font-size: 11px; margin-top: 5px; text-align: center; color: white;">${personaName}</span>
+                            <button onclick="quitarDelEquipo(${i})" style="position: absolute; top: 2px; right: 2px; background: #ff4444; border: none; color: white; border-radius: 3px; cursor: pointer; font-size: 10px; padding: 2px 5px;">X</button>
+                        </div>`;
+                } else {
+                    equipoContenedor.innerHTML += `
+                        <div style="width: 100px; height: 120px; background: #1a1a1a; border: 1px dashed #444; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #555; font-size: 12px;">
+                            Vacío
+                        </div>`;
+                }
+            }
+        }
+
+        function agregarAlEquipo(nombrePersona) {
+            const slotLibre = miEquipo.indexOf(null);
+            if (slotLibre !== -1) {
+                if (!miEquipo.includes(nombrePersona)) {
+                    miEquipo[slotLibre] = nombrePersona;
+                    renderizarEquipo();
+                } else {
+                    alert("¡Esa Persona ya está en tu equipo!");
+                }
+            } else {
+                alert("Tu equipo ya está lleno. Quita una Persona primero dándole a la X roja.");
+            }
+        }
+
+        function quitarDelEquipo(index) {
+            miEquipo[index] = null;
+            renderizarEquipo();
+        }
+
+        // --- RENDERIZADO DE BATALLA ---
+        function dibujarBarras(state) {
+            if (!miRol || !state[miRol]) return;
+
+            const me = state[miRol];
+            const enemy = (miRol === 'p1') ? state.p2 : state.p1;
+
+            if (state.status === 'WAITING') habilitarControles(false);
+            else if (state.status === 'PLAYING') habilitarControles(true);
+
+            // Actualizar nombres y sprites
+            document.getElementById("name-p1").innerText = me.name;
+            document.getElementById("sprite-p1").src = getSpritePath(me.name);
+            document.getElementById("name-opp").innerText = enemy.name;
+            document.getElementById("sprite-opp").src = getSpritePath(enemy.name);
+
+            document.getElementById("ui-name-p1").innerText = me.name;
+            document.getElementById("ui-hp-num").innerText = `${me.hp}/${me.hpMax}`;
+            renderizarAtaques(me.moves);
+
+            // Botones de Switch dinámicos
+            const switchContainer = document.querySelector('.switch-row');
+            switchContainer.innerHTML = ''; 
+            
+            miEquipo.forEach(persona => {
+                if (persona && persona !== me.name) {
+                    switchContainer.innerHTML += `
+                        <button class="switch-btn ps-button" onclick="enviarSwitch('${persona}')">
+                            ${persona}
+                        </button>`;
+                }
+            });
+
+            // Barras de vida
+            let pct1 = (me.hp / me.hpMax) * 100;
+            document.getElementById("bar-p1").style.width = pct1 + "%";
+            document.getElementById("porcentaje-p1").innerText = Math.ceil(pct1) + "%";
+            document.getElementById("bar-p1").style.background = pct1 < 25 ? "#ff4444" : (pct1 < 50 ? "#ffdd55" : "#48c774");
+
+            let pct2 = (enemy.hp / enemy.hpMax) * 100;
+            document.getElementById("bar-opp").style.width = pct2 + "%";
+            document.getElementById("porcentaje-opp").innerText = Math.ceil(pct2) + "%";
+            document.getElementById("bar-opp").style.background = pct2 < 25 ? "#ff4444" : (pct2 < 50 ? "#ffdd55" : "#48c774");
+
+            document.getElementById("ui-turn").innerText = state.turnCount;
+            habilitarControles(state.status === 'PLAYING');
+        }
+
+        // --- EVENTOS DE RED ---
+        document.getElementById('btn-find-battle').addEventListener('click', () => {
+            document.getElementById('tab-btn-batalla').style.display = 'inline-block';
+            cambiarTab('batalla');
+            if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'SEARCH_MATCH' }));
         });
-    }
 
-    
+        ws.onopen = () => escribirLogLobby(`<div style="color: #48c774; text-align: center; margin-top: 20px;">Connected to server. Ready to battle.</div>`);
 
-    function dibujarBarras(state) {
-        if (!miRol || !state[miRol]) return;
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'INIT') {
+                document.getElementById('status-message').innerHTML = data.message;
+                miRol = data.role; 
+            } else if (data.type === 'BATTLE_LOG') escribirLogBatalla(data.message);
+            else if (data.type === 'LOBBY_LOG') escribirLogLobby(data.message);
+            else if (data.type === 'UPDATE_STATE') dibujarBarras(data.state);
+        };
 
-        const me = state[miRol];
-        const enemy = (miRol === 'p1') ? state.p2 : state.p1;
-
-        if (state.status === 'WAITING') habilitarControles(false);
-        else if (state.status === 'PLAYING') habilitarControles(true);
-
-        // Actualizar nombres y sprites
-        document.getElementById("name-p1").innerText = me.name;
-        document.getElementById("sprite-p1").src = getSpritePath(me.name);
-        document.getElementById("name-opp").innerText = enemy.name;
-        document.getElementById("sprite-opp").src = getSpritePath(enemy.name);
-
-        document.getElementById("ui-name-p1").innerText = me.name;
-        document.getElementById("ui-hp-num").innerText = `${me.hp}/${me.hpMax}`;
-        renderizarAtaques(me.moves);
-const switchContainer = document.querySelector('.switch-row');
-    switchContainer.innerHTML = ''; // Limpiamos los botones viejos
-    
-    miEquipo.forEach(persona => {
-        // Solo creamos botón si hay una persona en ese slot y no es la activa
-        if (persona && persona !== me.name) {
-            switchContainer.innerHTML += `
-                <button class="switch-btn ps-button" onclick="enviarSwitch('${persona}')">
-                    ${persona}
-                </button>`;
+        function enviarAccion(nombreAtaque, tipoAtaque) {
+            if(ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'ACTION', skill: nombreAtaque, skillType: tipoAtaque }));
+                habilitarControles(false);
+            }
         }
-    });
-        // Barras de vida
-        let pct1 = (me.hp / me.hpMax) * 100;
-        document.getElementById("bar-p1").style.width = pct1 + "%";
-        document.getElementById("porcentaje-p1").innerText = Math.ceil(pct1) + "%";
-        document.getElementById("bar-p1").style.background = pct1 < 25 ? "#ff4444" : (pct1 < 50 ? "#ffdd55" : "#48c774");
 
-        let pct2 = (enemy.hp / enemy.hpMax) * 100;
-        document.getElementById("bar-opp").style.width = pct2 + "%";
-        document.getElementById("porcentaje-opp").innerText = Math.ceil(pct2) + "%";
-        document.getElementById("bar-opp").style.background = pct2 < 25 ? "#ff4444" : (pct2 < 50 ? "#ffdd55" : "#48c774");
-
-        document.getElementById("ui-turn").innerText = state.turnCount;
-        habilitarControles(state.status === 'PLAYING');
-    }
-
-    // --- EVENTOS ---
-    document.getElementById('btn-find-battle').addEventListener('click', () => {
-        document.getElementById('tab-btn-batalla').style.display = 'inline-block';
-        cambiarTab('batalla');
-        if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'SEARCH_MATCH' }));
-    });
-
-    ws.onopen = () => escribirLogLobby(`<div style="color: #48c774; text-align: center; margin-top: 20px;">Connected to server. Ready to battle.</div>`);
-
-    ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === 'INIT') {
-            document.getElementById('status-message').innerHTML = data.message;
-            miRol = data.role; 
-        } else if (data.type === 'BATTLE_LOG') escribirLogBatalla(data.message);
-        else if (data.type === 'LOBBY_LOG') escribirLogLobby(data.message);
-        else if (data.type === 'UPDATE_STATE') dibujarBarras(data.state);
-    };
-
-    function enviarAccion(nombreAtaque, tipoAtaque) {
-        if(ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'ACTION', skill: nombreAtaque, skillType: tipoAtaque }));
-            habilitarControles(false);
+        function enviarSwitch(nombrePersona) {
+            if(ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'SWITCH', persona: nombrePersona }));
+                habilitarControles(false);
+            }
         }
-    }
-    function enviarSwitch(nombrePersona) {
-    if(ws.readyState === WebSocket.OPEN) {
-        // Le enviamos al servidor la orden de cambio
-        ws.send(JSON.stringify({ type: 'SWITCH', persona: nombrePersona }));
-        
-        // Deshabilitamos los botones hasta que el servidor confirme el turno
-        habilitarControles(false);
-    }
-}
 
-    document.getElementById('lobby-textfield').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter' && this.value.trim() !== '') {
-            if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'CHAT_LOBBY', text: this.value }));
-            this.value = '';
-        }
-    });
+        // --- CHAT LISTENERS ---
+        document.getElementById('lobby-textfield').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && this.value.trim() !== '') {
+                if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'CHAT_LOBBY', text: this.value }));
+                this.value = '';
+            }
+        });
 
-    document.getElementById('chat-textfield').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter' && this.value.trim() !== '') {
-            if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'CHAT_BATTLE', text: this.value }));
-            this.value = '';
-        }
-    });
-    renderizarCompendium();
-    renderizarEquipo();
-</script>
+        document.getElementById('chat-textfield').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && this.value.trim() !== '') {
+                if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'CHAT_BATTLE', text: this.value }));
+                this.value = '';
+            }
+        });
+
+        // --- INICIALIZACIÓN ---
+        renderizarCompendium();
+        renderizarEquipo();
+    </script>
 </body>
 </html>
