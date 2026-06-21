@@ -270,7 +270,7 @@
                             <div style="clear:both;"></div>
                             <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-opp"></div></div>
                         </div>
-                        <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="sprite" id="sprite-opp">
+                        <img src="public/sprites/jiraiya.png" class="sprite" id="sprite-opp">
                     </div>
                     <div class="battler" id="player-side">
                         <div class="hp-box">
@@ -278,7 +278,7 @@
                             <div style="clear:both;"></div>
                             <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-p1"></div></div>
                         </div>
-                        <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="sprite" id="sprite-p1">
+                        <img src="public/sprites/izanagi.png" class="sprite" id="sprite-p1">
                     </div>
                 </div>
 
@@ -340,7 +340,7 @@
 
         function getSpritePath(name) {
             const fileName = name.toLowerCase().replace(/\s+/g, '-');
-            return `/sprites/${fileName}.png`;
+            return `public/sprites/${fileName}.png`;
         }
 
         function habilitarControles(habilitar) {
