@@ -330,13 +330,54 @@
         { name: "Arsene", type: "Curse" },
         { name: "Apollo", type: "Fire" }
     ];
-    let miEquipo = ["Izanagi", "Jack Frost", "Thanatos"];
+    let miEquipo = [null, null, null];
 
     // --- CONFIGURACIÓN WEBSOCKET ---
     const SERVER_URL = 'wss://persona-showdown-production.up.railway.app';
     const ws = new WebSocket(SERVER_URL);
     let miRol = null;
+// Dibuja la lista de todas las Personas disponibles
+function renderizarCompendium() {
+    const list = document.getElementById('pokedex-list');
+    list.innerHTML = '';
+    
+    COMPENDIUM.forEach(p => {
+        const spriteUrl = getSpritePath(p.name); 
+        list.innerHTML += `
+            <button class="ps-button" onclick="agregarAlEquipo('${p.name}')" style="display:flex; flex-direction:column; align-items:center; width: 80px;">
+                <img src="${spriteUrl}" style="width:50px; height:50px; object-fit:contain;" onerror="this.src=''">
+                <span style="font-size: 10px; margin-top: 5px;">${p.name}</span>
+            </button>`;
+    });
+}
 
+// Dibuja los 3 espacios de tu equipo
+function renderizarEquipo() {
+    const equipoContenedor = document.getElementById('equipo-actual');
+    equipoContenedor.innerHTML = '';
+
+    for (let i = 0; i < 3; i++) {
+        const personaName = miEquipo[i];
+        if (personaName) {
+            // Si hay una Persona en este slot, mostramos su imagen y un botón para quitarla
+            const spriteUrl = getSpritePath(personaName);
+            equipoContenedor.innerHTML += `
+                <div style="width: 100px; height: 120px; background: #222; border: 1px solid #555; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+                    <img src="${spriteUrl}" style="width: 60px; height: 60px; object-fit: contain;">
+                    <span style="font-size: 11px; margin-top: 5px; text-align: center;">${personaName}</span>
+                    <button onclick="quitarDelEquipo(${i})" style="position: absolute; top: 2px; right: 2px; background: #ff4444; border: none; color: white; border-radius: 3px; cursor: pointer; font-size: 10px; padding: 2px 5px;">X</button>
+                </div>
+            `;
+        } else {
+            // Si está vacío, mostramos un cuadro gris
+            equipoContenedor.innerHTML += `
+                <div style="width: 100px; height: 120px; background: #1a1a1a; border: 1px dashed #444; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #555; font-size: 12px;">
+                    Vacío
+                </div>
+            `;
+        }
+    }
+}
     // --- FUNCIONES AUXILIARES ---
     function cambiarTab(pantallaId) {
         document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('active'));
@@ -474,6 +515,8 @@ const switchContainer = document.querySelector('.switch-row');
             this.value = '';
         }
     });
+    renderizarCompendium();
+    renderizarEquipo();
 </script>
 </body>
 </html>
