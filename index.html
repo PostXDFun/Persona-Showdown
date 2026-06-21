@@ -378,11 +378,11 @@
     document.getElementById("ui-hp-num").innerText = `${me.hp}/${me.hpMax}`;
     
     // Aquí es donde cambias la imagen dinámicamente según quién eres
-    document.getElementById("sprite-p1").src = `/sprites/${me.name.toLowerCase()}.png`;
+    document.getElementById("sprite-p1").src = `public/sprites/${me.name.toLowerCase()}.png`;
 
     // 3. Renderizar lado del "Rival" (Arriba - Opponent Side)
     document.getElementById("name-opp").innerText = enemy.name;
-    document.getElementById("sprite-opp").src = `/sprites/${enemy.name.toLowerCase()}.png`;
+    document.getElementById("sprite-opp").src = `public/sprites/${enemy.name.toLowerCase()}.png`;
 
     // Renderizar Ataques (Solo para ti)
     renderizarAtaques(me.moves);
