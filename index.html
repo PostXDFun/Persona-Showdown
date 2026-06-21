@@ -108,8 +108,12 @@
         /* =========================================
             PANTALLA DE BATALLA
             ========================================= */
+      /* 1. Aseguramos que los paneles no se estiren */
         #left-pane { flex: 6; display: flex; flex-direction: column; background: #222; border-right: 1px solid #111; height: 100%; overflow: hidden; }
         #right-pane { flex: 4; display: flex; flex-direction: column; background: rgba(20,20,20,0.9); height: 100%; overflow: hidden; }
+
+        /* 2. El log con el min-height: 0 es la clave para que deslice solo */
+        #log-content { flex-grow: 1; padding: 15px; overflow-y: auto; font-size: 13px; line-height: 1.4; color: #ccc; min-height: 0; }
 
         #arena { flex: 6; position: relative; background-color: #8fb88b; background-size: cover; border-bottom: 1px solid #111; }
         .turn-box { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.7); color: #333; padding: 2px 8px; border: 1px solid #999; border-radius: 4px; font-weight: bold; font-size: 14px; z-index: 20;}
