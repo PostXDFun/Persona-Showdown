@@ -317,7 +317,21 @@
             document.getElementById(`pantalla-${pantallaId}`).classList.add('active');
             document.getElementById(`tab-btn-${pantallaId}`).classList.add('active');
         }
+const COMPENDIUM = [
+        { name: "Izanagi", type: "Electric" },
+        { name: "Jiraiya", type: "Wind" },
+        { name: "Jack Frost", type: "Ice" },
+        { name: "Thanatos", type: "Curse" },
+        { name: "Arsene", type: "Curse" },
+        { name: "Apollo", type: "Fire" }
+    ];
 
+    let miEquipo = [null, null, null];
+
+    // Función principal de navegación
+    function cambiarTab(pantallaId) {
+        // ... (tu código actual)
+    }
         const SERVER_URL = 'wss://persona-showdown-production.up.railway.app';
         const ws = new WebSocket(SERVER_URL);
         let miRol = null;
@@ -361,28 +375,41 @@
             });
         }
 
-       function dibujarBarras(state) {
-    if (!miRol) return;
+    function dibujarBarras(state) {
+    if (!miRol || !state[miRol]) return;
 
-    // 1. Identificar quién es "Yo" y quién es el "Rival"
     const me = state[miRol];
     const enemy = (miRol === 'p1') ? state.p2 : state.p1;
 
-    // Controlar botones y estado global
+    // Control de botones
     if (state.status === 'WAITING') habilitarControles(false);
     else if (state.status === 'PLAYING') habilitarControles(true);
 
-    // 2. Renderizar "Mi" lado (Abajo - Player Side)
+    // --- AQUÍ VA LA ASIGNACIÓN CON LA FUNCIÓN NUEVA ---
     document.getElementById("name-p1").innerText = me.name;
+    document.getElementById("sprite-p1").src = getSpritePath(me.name); // <--- AQUÍ
+    
+    document.getElementById("name-opp").innerText = enemy.name;
+    document.getElementById("sprite-opp").src = getSpritePath(enemy.name); // <--- AQUÍ
+    // --------------------------------------------------
+
     document.getElementById("ui-name-p1").innerText = me.name;
     document.getElementById("ui-hp-num").innerText = `${me.hp}/${me.hpMax}`;
-    
-    // Aquí es donde cambias la imagen dinámicamente según quién eres
-    document.getElementById("sprite-p1").src = `public/sprites/${me.name.toLowerCase()}.png`;
+    renderizarAtaques(me.moves);
 
-    // 3. Renderizar lado del "Rival" (Arriba - Opponent Side)
-    document.getElementById("name-opp").innerText = enemy.name;
-    document.getElementById("sprite-opp").src = `public/sprites/${enemy.name.toLowerCase()}.png`;
+    // Barras de Vida
+    let pct1 = (me.hp / me.hpMax) * 100;
+    document.getElementById("bar-p1").style.width = pct1 + "%";
+    document.getElementById("porcentaje-p1").innerText = Math.ceil(pct1) + "%";
+    document.getElementById("bar-p1").style.background = pct1 < 25 ? "#ff4444" : (pct1 < 50 ? "#ffdd55" : "#48c774");
+
+    let pct2 = (enemy.hp / enemy.hpMax) * 100;
+    document.getElementById("bar-opp").style.width = pct2 + "%";
+    document.getElementById("porcentaje-opp").innerText = Math.ceil(pct2) + "%";
+    document.getElementById("bar-opp").style.background = pct2 < 25 ? "#ff4444" : (pct2 < 50 ? "#ffdd55" : "#48c774");
+
+    document.getElementById("ui-turn").innerText = state.turnCount;
+}
 
     // Renderizar Ataques (Solo para ti)
     renderizarAtaques(me.moves);
@@ -417,6 +444,11 @@
             else if (data.type === 'BATTLE_LOG') escribirLogBatalla(data.message);
             else if (data.type === 'LOBBY_LOG') escribirLogLobby(data.message);
             else if (data.type === 'UPDATE_STATE') dibujarBarras(data.state);
+            // Pon esta función junto a tus otras funciones helper
+function getSpritePath(name) {
+    const fileName = name.toLowerCase().replace(/\s+/g, '-');
+    return `/public/sprites/${fileName}.png`;
+}
         };
 
         function enviarAccion(nombreAtaque, tipoAtaque) {
