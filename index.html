@@ -12,7 +12,6 @@
             font-family: Verdana, Helvetica, Arial, sans-serif; 
             font-size: 10pt;
             background-color: #111; 
-            background-image: url(''); 
             background-size: cover;
             background-position: center;
             color: #eee; 
@@ -112,7 +111,7 @@
         #left-pane { flex: 6; display: flex; flex-direction: column; background: #222; border-right: 1px solid #111; height: 100%; overflow: hidden; }
         #right-pane { flex: 4; display: flex; flex-direction: column; background: rgba(20,20,20,0.9); height: 100%; overflow: hidden; }
 
-        #arena { flex: 6; position: relative; background-color: #8fb88b; background-image: url('https://placehold.co/800x400/8fb88b/8fb88b?text='); background-size: cover; border-bottom: 1px solid #111; }
+        #arena { flex: 6; position: relative; background-color: #8fb88b; background-size: cover; border-bottom: 1px solid #111; }
         .turn-box { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.7); color: #333; padding: 2px 8px; border: 1px solid #999; border-radius: 4px; font-weight: bold; font-size: 14px; z-index: 20;}
 
         .battler { position: absolute; display: flex; flex-direction: column; align-items: center; }
@@ -197,6 +196,7 @@
 
     <div id="main-content">
         
+        <!-- PANTALLA DE INICIO -->
         <div id="pantalla-inicio" class="pantalla active">
             <div id="home-left" class="home-col">
                 <div class="matchmaking-box">
@@ -240,6 +240,7 @@
             </div>
         </div>
 
+        <!-- PANTALLA DE TEAMBUILDER -->
         <div id="pantalla-teambuilder" class="pantalla">
             <div class="tb-header">
                 <h2>Teambuilder</h2>
@@ -247,15 +248,18 @@
             </div>
 
             <div id="equipo-actual" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                </div>
+                <!-- Los 3 slots se generarán con JS -->
+            </div>
 
             <div style="background: rgba(0,0,0,0.5); padding: 15px; border: 1px solid #444;">
                 <h3 style="margin-bottom: 10px; color: #eee; font-size: 14px;">Compendium</h3>
                 <div id="pokedex-list" style="display: flex; flex-wrap: wrap; gap: 10px;">
-                    </div>
+                    <!-- Los botones del compendium se generarán con JS -->
+                </div>
             </div>
         </div>
 
+        <!-- PANTALLA DE BATALLA -->
         <div id="pantalla-batalla" class="pantalla">
             <div id="left-pane">
                 <div id="arena">
@@ -266,7 +270,7 @@
                             <div style="clear:both;"></div>
                             <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-opp"></div></div>
                         </div>
-                        <img src="" class="sprite" id="sprite-opp">
+                        <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="sprite" id="sprite-opp">
                     </div>
                     <div class="battler" id="player-side">
                         <div class="hp-box">
@@ -274,7 +278,7 @@
                             <div style="clear:both;"></div>
                             <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-p1"></div></div>
                         </div>
-                        <img src="" class="sprite" id="sprite-p1">
+                        <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="sprite" id="sprite-p1">
                     </div>
                 </div>
 
@@ -288,7 +292,8 @@
                     </div>
                     <div class="switch-title">Switch</div>
                     <div class="switch-row">
-                        </div>
+                        <!-- Botones dinámicos de switch -->
+                    </div>
                 </div>
             </div>
 
@@ -335,7 +340,7 @@
 
         function getSpritePath(name) {
             const fileName = name.toLowerCase().replace(/\s+/g, '-');
-            return `/public/sprites/${fileName}.png`;
+            return `/sprites/${fileName}.png`;
         }
 
         function habilitarControles(habilitar) {
