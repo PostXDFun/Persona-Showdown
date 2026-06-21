@@ -109,7 +109,6 @@
         /* =========================================
             PANTALLA DE BATALLA
             ========================================= */
-        /* AQUÍ ESTÁN LAS LÍNEAS DE CSS CORREGIDAS PARA EL SCROLL */
         #left-pane { flex: 6; display: flex; flex-direction: column; background: #222; border-right: 1px solid #111; height: 100%; overflow: hidden; }
         #right-pane { flex: 4; display: flex; flex-direction: column; background: rgba(20,20,20,0.9); height: 100%; overflow: hidden; }
 
@@ -176,10 +175,7 @@
 
         #log-header { padding: 8px; background: #222; border-bottom: 1px solid #111; text-align: right; }
         #log-header button { background: #444; color: #eee; border: 1px solid #666; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 11px; }
-        
-        /* AQUÍ ESTÁ EL TRUCO PARA EL SCROLL DEL LOG */
         #log-content { flex-grow: 1; padding: 15px; overflow-y: auto; font-size: 13px; line-height: 1.4; color: #ccc; min-height: 0; }
-        
         .log-turn { font-size: 15px; font-weight: bold; color: #fff; margin: 15px 0 5px 0; border-bottom: 1px solid #444; padding-bottom: 2px;}
         .log-damage { color: #ff8888; }
         #chat-input { padding: 5px; background: #222; border-top: 1px solid #111; display: flex;}
@@ -210,7 +206,7 @@
                     </div>
                     <div class="ps-select-group">
                         <label>Team:</label>
-                        <select disabled><option>Random team</option></select>
+                        <select disabled><option choice="selected">Custom Teambuilder</option></select>
                     </div>
                     <label style="font-size: 11px; margin-top: 5px;"><input type="checkbox" disabled> Don't allow spectators</label>
                     <button id="btn-find-battle" class="ps-button big-battle-btn">
@@ -266,19 +262,19 @@
                     <div class="turn-box">Turn <span id="ui-turn">1</span></div>
                     <div class="battler" id="opponent-side">
                         <div class="hp-box">
-                            <span id="name-opp">Jiraiya</span> <span style="float:right; font-weight:normal;" id="porcentaje-opp">100%</span>
+                            <span id="name-opp">...</span> <span style="float:right; font-weight:normal;" id="porcentaje-opp">100%</span>
                             <div style="clear:both;"></div>
                             <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-opp"></div></div>
                         </div>
-                        <img src="public/sprites/jiraiya.png" class="sprite" id="sprite-opp">
+                        <img src="" class="sprite" id="sprite-opp">
                     </div>
                     <div class="battler" id="player-side">
                         <div class="hp-box">
-                            <span id="name-p1">Izanagi</span> <span style="float:right; font-weight:normal;" id="porcentaje-p1">100%</span>
+                            <span id="name-p1">...</span> <span style="float:right; font-weight:normal;" id="porcentaje-p1">100%</span>
                             <div style="clear:both;"></div>
                             <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-p1"></div></div>
                         </div>
-                        <img src="public/sprites/izanagi.png" class="sprite" id="sprite-p1">
+                        <img src="" class="sprite" id="sprite-p1">
                     </div>
                 </div>
 
@@ -339,7 +335,7 @@
 
         function getSpritePath(name) {
             const fileName = name.toLowerCase().replace(/\s+/g, '-');
-            return `public/sprites/${fileName}.png`;
+            return `/public/sprites/${fileName}.png`;
         }
 
         function habilitarControles(habilitar) {
@@ -447,11 +443,12 @@
             document.getElementById("ui-hp-num").innerText = `${me.hp}/${me.hpMax}`;
             renderizarAtaques(me.moves);
 
-            // Botones de Switch dinámicos
+            // Botones de Switch dinámicos basados en la vida de tu teamState enviado por el servidor
             const switchContainer = document.querySelector('.switch-row');
             switchContainer.innerHTML = ''; 
             
             miEquipo.forEach(persona => {
+                // Solo renderizar opción si no es el activo y sigue vivo según el servidor
                 if (persona && persona !== me.name) {
                     switchContainer.innerHTML += `
                         <button class="switch-btn ps-button" onclick="enviarSwitch('${persona}')">
@@ -472,14 +469,29 @@
             document.getElementById("bar-opp").style.background = pct2 < 25 ? "#ff4444" : (pct2 < 50 ? "#ffdd55" : "#48c774");
 
             document.getElementById("ui-turn").innerText = state.turnCount;
-            habilitarControles(state.status === 'PLAYING');
+            
+            // Bloqueamos controles si el juego terminó o está calculando
+            if (state.status === 'FINISHED' || state.status === 'RESOLVING') {
+                habilitarControles(false);
+            } else {
+                habilitarControles(true);
+            }
         }
 
         // --- EVENTOS DE RED ---
         document.getElementById('btn-find-battle').addEventListener('click', () => {
+            // COMPROBAMOS QUE HAYA ARMADO SU EQUIPO COMPLETITO ANTES DE BUSCAR RIVAL
+            if (miEquipo.includes(null)) {
+                alert("¡Debes seleccionar 3 Personas en tu Teambuilder antes de buscar una batalla!");
+                return;
+            }
             document.getElementById('tab-btn-batalla').style.display = 'inline-block';
             cambiarTab('batalla');
-            if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'SEARCH_MATCH' }));
+            
+            // LE MANDAMOS EL EQUIPO AL SERVIDOR
+            if(ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'SEARCH_MATCH', team: miEquipo }));
+            }
         });
 
         ws.onopen = () => escribirLogLobby(`<div style="color: #48c774; text-align: center; margin-top: 20px;">Connected to server. Ready to battle.</div>`);
@@ -501,6 +513,7 @@
             }
         }
 
+        // Envía el comando de switch
         function enviarSwitch(nombrePersona) {
             if(ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({ type: 'SWITCH', persona: nombrePersona }));

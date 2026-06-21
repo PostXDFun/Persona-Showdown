@@ -3,7 +3,7 @@ const http = require('http');
 const path = require('path');
 const { WebSocketServer } = require('ws');
 
-const app = express();
+const app = report = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -13,30 +13,22 @@ const wss = new WebSocketServer({ server });
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// --- COMPENDIO OFICIAL GLOBAL DEL SERVIDOR ---
+const SERVER_COMPENDIUM = {
+    "Izanagi": { hpMax: 150, weakness: "Wind", moves: [{ name: "Zio", type: "Electric", sp: "4 SP" }, { name: "Cleave", type: "Physical", sp: "10% HP" }, { name: "Rakunda", type: "Support", sp: "8 SP" }, { name: "Tarukaja", type: "Support", sp: "8 SP" }] },
+    "Jiraiya": { hpMax: 120, weakness: "Electric", moves: [{ name: "Garu", type: "Wind", sp: "3 SP" }, { name: "Brave Blade", type: "Physical", sp: "20% HP" }, { name: "Sukukaja", type: "Support", sp: "12 SP" }, { name: "Dekunda", type: "Support", sp: "10 SP" }] },
+    "Jack Frost": { hpMax: 130, weakness: "Fire", moves: [{ name: "Bufu", type: "Ice", sp: "4 SP" }, { name: "Mabufu", type: "Ice", sp: "10 SP" }, { name: "Rakukaja", type: "Support", sp: "8 SP" }, { name: "Lunge", type: "Physical", sp: "10% HP" }] },
+    "Thanatos": { hpMax: 200, weakness: "Light", moves: [{ name: "Megidolaon", type: "Almighty", sp: "30 SP" }, { name: "Maeigaon", type: "Curse", sp: "22 SP" }, { name: "Brave Blade", type: "Physical", sp: "20% HP" }, { name: "Mind Charge", type: "Support", sp: "15 SP" }] },
+    "Arsene": { hpMax: 110, weakness: "Ice", moves: [{ name: "Eiha", type: "Curse", sp: "4 SP" }, { name: "Cleave", type: "Physical", sp: "10% HP" }, { name: "Sukunda", type: "Support", sp: "8 SP" }, { name: "Dream Needle", type: "Physical", sp: "12% HP" }] },
+    "Apollo": { hpMax: 160, weakness: "Ice", moves: [{ name: "Agi", type: "Fire", sp: "4 SP" }, { name: "Maragi", type: "Fire", sp: "10 SP" }, { name: "Tarukaja", type: "Support", sp: "8 SP" }, { name: "Nova Cygnus", type: "Almighty", sp: "50 SP" }] }
+};
+
 let allClients = [];
 let room = {
     status: 'WAITING',
     players: [],
-    p1: { 
-        ws: null, name: "Izanagi", hpMax: 150, hp: 150, weakness: "Wind", action: null,
-        teamState: {}, 
-        moves: [
-            { name: "Zio", type: "Electric", sp: "4 SP" },
-            { name: "Cleave", type: "Physical", sp: "10% HP" },
-            { name: "Rakunda", type: "Support", sp: "8 SP" },
-            { name: "Tarukaja", type: "Support", sp: "8 SP" }
-        ]
-    },
-    p2: { 
-        ws: null, name: "Jiraiya", hpMax: 120, hp: 120, weakness: "Electric", action: null,
-        teamState: {}, 
-        moves: [
-            { name: "Garu", type: "Wind", sp: "3 SP" },
-            { name: "Brave Blade", type: "Physical", sp: "20% HP" },
-            { name: "Sukukaja", type: "Support", sp: "12 SP" },
-            { name: "Dekunda", type: "Support", sp: "10 SP" }
-        ]
-    },
+    p1: { ws: null, name: "", hpMax: 100, hp: 100, weakness: "", action: null, team: [], teamState: {}, moves: [] },
+    p2: { ws: null, name: "", hpMax: 100, hp: 100, weakness: "", action: null, team: [], teamState: {}, moves: [] },
     turnCount: 1
 };
 
@@ -60,36 +52,23 @@ function broadcastLobbyLog(htmlMessage) {
     allClients.forEach(c => { if (c.readyState === c.OPEN) c.send(message); });
 }
 
-// --- FUNCIÓN PARA ACTUALIZAR STATS AL CAMBIAR ---
+// Verifica si a un jugador le quedan Personas con vida en su mochila
+function tienePersonasVivas(jugador) {
+    return jugador.team.some(personaName => jugador.teamState[personaName] > 0);
+}
+
 function efectuarCambio(jugador, nuevaPersona) {
     broadcastBattleLog(`<b>¡Adelante, ${nuevaPersona}!</b>`);
     
-    // 1. GUARDAR LA VIDA DE LA PERSONA SALIENTE
+    // Guardamos la vida del que se retira (si seguía vivo)
     jugador.teamState[jugador.name] = jugador.hp;
-
-    // 2. ACTUALIZAR EL NOMBRE A LA NUEVA PERSONA
     jugador.name = nuevaPersona;
     
-    const SERVER_COMPENDIUM = {
-        "Izanagi": { hpMax: 150, weakness: "Wind", moves: [{ name: "Zio", type: "Electric", sp: "4 SP" }, { name: "Cleave", type: "Physical", sp: "10% HP" }, { name: "Rakunda", type: "Support", sp: "8 SP" }, { name: "Tarukaja", type: "Support", sp: "8 SP" }] },
-        "Jiraiya": { hpMax: 120, weakness: "Electric", moves: [{ name: "Garu", type: "Wind", sp: "3 SP" }, { name: "Brave Blade", type: "Physical", sp: "20% HP" }, { name: "Sukukaja", type: "Support", sp: "12 SP" }, { name: "Dekunda", type: "Support", sp: "10 SP" }] },
-        "Jack Frost": { hpMax: 130, weakness: "Fire", moves: [{ name: "Bufu", type: "Ice", sp: "4 SP" }, { name: "Mabufu", type: "Ice", sp: "10 SP" }, { name: "Rakukaja", type: "Support", sp: "8 SP" }, { name: "Lunge", type: "Physical", sp: "10% HP" }] },
-        "Thanatos": { hpMax: 200, weakness: "Light", moves: [{ name: "Megidolaon", type: "Almighty", sp: "30 SP" }, { name: "Maeigaon", type: "Curse", sp: "22 SP" }, { name: "Brave Blade", type: "Physical", sp: "20% HP" }, { name: "Mind Charge", type: "Support", sp: "15 SP" }] },
-        "Arsene": { hpMax: 110, weakness: "Ice", moves: [{ name: "Eiha", type: "Curse", sp: "4 SP" }, { name: "Cleave", type: "Physical", sp: "10% HP" }, { name: "Sukunda", type: "Support", sp: "8 SP" }, { name: "Dream Needle", type: "Physical", sp: "12% HP" }] },
-        "Apollo": { hpMax: 160, weakness: "Ice", moves: [{ name: "Agi", type: "Fire", sp: "4 SP" }, { name: "Maragi", type: "Fire", sp: "10 SP" }, { name: "Tarukaja", type: "Support", sp: "8 SP" }, { name: "Nova Cygnus", type: "Almighty", sp: "50 SP" }] }
-    };
-
     if (SERVER_COMPENDIUM[nuevaPersona]) {
         jugador.hpMax = SERVER_COMPENDIUM[nuevaPersona].hpMax;
         jugador.weakness = SERVER_COMPENDIUM[nuevaPersona].weakness;
         jugador.moves = SERVER_COMPENDIUM[nuevaPersona].moves;
-        
-        // 3. CARGAR LA VIDA GUARDADA (O dársela al máximo si es su primera vez en batalla)
-        if (jugador.teamState[nuevaPersona] !== undefined) {
-            jugador.hp = jugador.teamState[nuevaPersona];
-        } else {
-            jugador.hp = jugador.hpMax;
-        }
+        jugador.hp = jugador.teamState[nuevaPersona]; // Carga sus HP reales
     }
 }
 
@@ -106,20 +85,21 @@ function ejecutarAtaque(atacante, defensor, accion) {
     defensor.hp -= damage;
     if (defensor.hp < 0) defensor.hp = 0;
 
+    // Sincronizamos inmediatamente el daño en su mochila de equipo
+    defensor.teamState[defensor.name] = defensor.hp;
+
     let damagePercent = Math.floor((damage / defensor.hpMax) * 100);
     broadcastBattleLog(`<span class="log-damage">(The opposing ${defensor.name} lost ${damagePercent}% of its health!)</span>`);
 }
 
-// --- RESOLVER EL TURNO CON CONTROL DE ESTADOS ---
 async function resolverTurno() {
-    // 1. Bloqueamos las acciones en los clientes cambiando a RESOLVING
     room.status = 'RESOLVING'; 
-    broadcastState(); // Avisamos de inmediato a las pantallas para apagar controles
+    broadcastState();
 
     broadcastBattleLog(`<div class="log-turn">Turn ${room.turnCount}</div>`);
     await sleep(1000); 
 
-    // Fase 1: Cambios (Tienen prioridad sobre los ataques)
+    // Fase 1: Cambios manuales
     if (room.p1.action.type === 'SWITCH') {
         efectuarCambio(room.p1, room.p1.action.persona);
         broadcastState();
@@ -131,53 +111,72 @@ async function resolverTurno() {
         await sleep(1500);
     }
 
-    // Fase 2: Ataques
+    // Fase 2: Ataque de P1
     if (room.p1.action.type === 'ACTION' && room.p1.hp > 0) {
         ejecutarAtaque(room.p1, room.p2, room.p1.action);
         broadcastState();
+        
+        // Si P2 muere, revisamos si tiene más equipo o pierde definitivo
+        if (room.p2.hp <= 0) {
+            if (!tienePersonasVivas(room.p2)) {
+                broadcastBattleLog(`<div class="log-turn" style="color: #ffd700;">¡Player 1 se lleva la victoria! El equipo rival ha sido eliminado por completo.</div>`);
+                room.status = 'FINISHED';
+                broadcastState();
+                return;
+            } else {
+                // Auto-cambio al siguiente vivo
+                const siguiente = room.p2.team.find(p => room.p2.teamState[p] > 0);
+                broadcastBattleLog(`<span style="color:#ff4444; font-weight:bold;">¡El Persona de tu oponente cayó! Envía su reserva automáticamente...</span>`);
+                efectuarCambio(room.p2, siguiente);
+                room.p2.action = { type: 'NONE' }; // Cancela su acción si no se había movido
+                broadcastState();
+            }
+        }
         await sleep(2000); 
     }
+
+    // Fase 3: Ataque de P2
     if (room.p2.action.type === 'ACTION' && room.p2.hp > 0) {
         ejecutarAtaque(room.p2, room.p1, room.p2.action);
         broadcastState();
+        
+        // Si P1 muere, revisamos si tiene más equipo o pierde definitivo
+        if (room.p1.hp <= 0) {
+            if (!tienePersonasVivas(room.p1)) {
+                broadcastBattleLog(`<div class="log-turn" style="color: #ffd700;">¡Player 2 se lleva la victoria! Tu equipo se ha quedado sin Personas.</div>`);
+                room.status = 'FINISHED';
+                broadcastState();
+                return;
+            } else {
+                // Auto-cambio al siguiente vivo
+                const siguiente = room.p1.team.find(p => room.p1.teamState[p] > 0);
+                broadcastBattleLog(`<span style="color:#ff4444; font-weight:bold;">¡Tu Persona se ha debilitado! El sistema saca tu reserva automáticamente...</span>`);
+                efectuarCambio(room.p1, siguiente);
+                room.p1.action = { type: 'NONE' };
+                broadcastState();
+            }
+        }
         await sleep(1000);
     }
 
-    // Fase 3: Verificar KO / Fin del Combate
-    if (room.p1.hp <= 0 || room.p2.hp <= 0) {
-        const ganador = room.p1.hp > 0 ? "Player 1" : "Player 2";
-        broadcastBattleLog(`<div class="log-turn" style="color: #ffd700;">¡${ganador} se lleva la victoria! La batalla ha terminado.</div>`);
-        
-        room.status = 'FINISHED';
-        broadcastState();
-        return; 
-    }
-
-    // 2. Limpieza segura: Reseteamos acciones al terminar de calcular todo el turno
     room.p1.action = null;
     room.p2.action = null;
     room.turnCount++;
     
-    // 3. Devolvemos el control abriendo los controles de nuevo
     room.status = 'PLAYING'; 
     broadcastState();
 }
 
 function resetearSala() {
-    room.p1.hp = room.p1.hpMax;
-    room.p2.hp = room.p2.hpMax;
     room.turnCount = 1;
     room.p1.action = null;
     room.p2.action = null;
-    
-    room.p1.teamState = {}; 
-    room.p2.teamState = {};
 }
 
 // --- CONEXIONES WEBSOCKET ---
 wss.on('connection', (ws) => {
     allClients.push(ws);
-    ws.send(JSON.stringify({ type: 'LOBBY_LOG', message: '<span style="color: cyan;">Conectado al servidor central. Presiona "Battle!" para buscar partida.</span>' }));
+    ws.send(JSON.stringify({ type: 'LOBBY_LOG', message: '<span style="color: cyan;">Conectado al servidor central. Arma tu equipo y presiona "Battle!" para buscar partida.</span>' }));
 
     ws.on('message', (data) => {
         const message = JSON.parse(data);
@@ -191,25 +190,52 @@ wss.on('connection', (ws) => {
         else if (message.type === 'SEARCH_MATCH') {
             if (room.players.includes(ws)) return; 
             if (room.players.length >= 2) {
-                ws.send(JSON.stringify({ type: 'BATTLE_LOG', message: '<span style="color: red;">Las arenas están llenas actualmente. Intenta de nuevo más tarde.</span>' }));
+                ws.send(JSON.stringify({ type: 'BATTLE_LOG', message: '<span style="color: red;">Las arenas están llenas actualmente.</span>' }));
                 return;
             }
+            
             room.players.push(ws);
             const isP1 = room.p1.ws === null;
+            
             if (isP1) {
                 room.p1.ws = ws;
-                ws.send(JSON.stringify({ type: 'INIT', message: 'Buscando rival... (Jugarás como Izanagi)', role: 'p1' }));
+                room.p1.team = message.team;
+                room.p1.name = message.team[0];
+                
+                // Configurar stats iniciales
+                const comp = SERVER_COMPENDIUM[room.p1.name];
+                room.p1.hpMax = comp.hpMax;
+                room.p1.hp = comp.hpMax;
+                room.p1.weakness = comp.weakness;
+                room.p1.moves = comp.moves;
+                
+                // Inicializar mochilas con vida máxima
+                room.p1.teamState = {};
+                message.team.forEach(p => { room.p1.teamState[p] = SERVER_COMPENDIUM[p].hpMax; });
+
                 resetearSala();
+                ws.send(JSON.stringify({ type: 'INIT', message: `Buscando rival... (Tu líder es ${room.p1.name})`, role: 'p1' }));
                 broadcastState();
             } else {
                 room.p2.ws = ws;
+                room.p2.team = message.team;
+                room.p2.name = message.team[0];
+                
+                const comp = SERVER_COMPENDIUM[room.p2.name];
+                room.p2.hpMax = comp.hpMax;
+                room.p2.hp = comp.hpMax;
+                room.p2.weakness = comp.weakness;
+                room.p2.moves = comp.moves;
+                
+                room.p2.teamState = {};
+                message.team.forEach(p => { room.p2.teamState[p] = SERVER_COMPENDIUM[p].hpMax; });
+
                 room.status = 'PLAYING';
-                ws.send(JSON.stringify({ type: 'INIT', message: '¡Rival encontrado! (Jugarás como Jiraiya)', role: 'p2' }));
+                ws.send(JSON.stringify({ type: 'INIT', message: `¡Rival encontrado! (Tu líder es ${room.p2.name})`, role: 'p2' }));
                 broadcastBattleLog(`<span style="color: #48c774;">¡Ambos jugadores conectados! Empieza la batalla.</span>`);
                 broadcastState();
             }
         }
-        // Solo aceptamos comandos si el estado global de la sala es 'PLAYING'
         else if ((message.type === 'ACTION' || message.type === 'SWITCH') && room.status === 'PLAYING') {
             const accionTexto = message.type === 'SWITCH' ? `cambiar a ${message.persona}` : `usar ${message.skill}`;
             
