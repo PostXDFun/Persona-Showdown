@@ -63,17 +63,67 @@ function efectuarCambio(jugador, nuevaPersona) {
     broadcastBattleLog(`<b>¡Adelante, ${nuevaPersona}!</b>`);
     jugador.name = nuevaPersona;
     
-    // El servidor necesita saber los stats de las Personas
+    // El compendio completo con los 4 ataques para cada Persona
     const SERVER_COMPENDIUM = {
-        "Izanagi": { hpMax: 150, weakness: "Wind", moves: [{ name: "Zio", type: "Electric", sp: "4 SP" }, { name: "Cleave", type: "Physical", sp: "10% HP" }] },
-        "Jiraiya": { hpMax: 120, weakness: "Electric", moves: [{ name: "Garu", type: "Wind", sp: "3 SP" }, { name: "Brave Blade", type: "Physical", sp: "20% HP" }] },
-        "Jack Frost": { hpMax: 130, weakness: "Fire", moves: [{ name: "Bufu", type: "Ice", sp: "4 SP" }, { name: "Mabufu", type: "Ice", sp: "10 SP" }] },
-        "Thanatos": { hpMax: 200, weakness: "Light", moves: [{ name: "Megidolaon", type: "Almighty", sp: "30 SP" }, { name: "Maeigaon", type: "Curse", sp: "22 SP" }] }
+        "Izanagi": { 
+            hpMax: 150, weakness: "Wind", 
+            moves: [
+                { name: "Zio", type: "Electric", sp: "4 SP" }, 
+                { name: "Cleave", type: "Physical", sp: "10% HP" },
+                { name: "Rakunda", type: "Support", sp: "8 SP" },
+                { name: "Tarukaja", type: "Support", sp: "8 SP" }
+            ] 
+        },
+        "Jiraiya": { 
+            hpMax: 120, weakness: "Electric", 
+            moves: [
+                { name: "Garu", type: "Wind", sp: "3 SP" }, 
+                { name: "Brave Blade", type: "Physical", sp: "20% HP" },
+                { name: "Sukukaja", type: "Support", sp: "12 SP" },
+                { name: "Dekunda", type: "Support", sp: "10 SP" }
+            ] 
+        },
+        "Jack Frost": { 
+            hpMax: 130, weakness: "Fire", 
+            moves: [
+                { name: "Bufu", type: "Ice", sp: "4 SP" }, 
+                { name: "Mabufu", type: "Ice", sp: "10 SP" },
+                { name: "Rakukaja", type: "Support", sp: "8 SP" },
+                { name: "Lunge", type: "Physical", sp: "10% HP" }
+            ] 
+        },
+        "Thanatos": { 
+            hpMax: 200, weakness: "Light", 
+            moves: [
+                { name: "Megidolaon", type: "Almighty", sp: "30 SP" }, 
+                { name: "Maeigaon", type: "Curse", sp: "22 SP" },
+                { name: "Brave Blade", type: "Physical", sp: "20% HP" },
+                { name: "Mind Charge", type: "Support", sp: "15 SP" }
+            ] 
+        },
+        "Arsene": { 
+            hpMax: 110, weakness: "Ice", 
+            moves: [
+                { name: "Eiha", type: "Curse", sp: "4 SP" }, 
+                { name: "Cleave", type: "Physical", sp: "10% HP" },
+                { name: "Sukunda", type: "Support", sp: "8 SP" },
+                { name: "Dream Needle", type: "Physical", sp: "12% HP" }
+            ] 
+        },
+        "Apollo": { 
+            hpMax: 160, weakness: "Ice", 
+            moves: [
+                { name: "Agi", type: "Fire", sp: "4 SP" }, 
+                { name: "Maragi", type: "Fire", sp: "10 SP" },
+                { name: "Tarukaja", type: "Support", sp: "8 SP" },
+                { name: "Nova Cygnus", type: "Almighty", sp: "50 SP" }
+            ] 
+        }
     };
 
     if (SERVER_COMPENDIUM[nuevaPersona]) {
         jugador.hpMax = SERVER_COMPENDIUM[nuevaPersona].hpMax;
-        jugador.hp = SERVER_COMPENDIUM[nuevaPersona].hpMax; // Nota: Cura al cambiar (se puede mejorar después)
+        jugador.hp = SERVER_COMPENDIUM[nuevaPersona].hpMax; // Nota: Seguimos curando al cambiar por ahora
         jugador.weakness = SERVER_COMPENDIUM[nuevaPersona].weakness;
         jugador.moves = SERVER_COMPENDIUM[nuevaPersona].moves;
     }
