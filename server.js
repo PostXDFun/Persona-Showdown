@@ -116,6 +116,21 @@ wss.on('connection', (ws) => {
     ws.send(JSON.stringify({ type: 'LOBBY_LOG', message: '<span style="color: cyan;">Conectado al servidor central. Presiona "Battle!" para buscar partida.</span>' }));
 
     ws.on('message', (data) => {
+        // En tu server.js, dentro del ws.on('message')
+if (data.type === 'SWITCH') {
+    const jugador = state[miRol]; // p1 o p2
+    
+    // 1. Cambias el nombre activo
+    jugador.name = data.persona;
+    
+    // 2. Actualizas sus stats/ataques (aquí buscarías en tu COMPENDIUM del servidor)
+    // jugador.hp = ...
+    // jugador.moves = ...
+    
+    // 3. Envías el nuevo estado a ambos jugadores
+    enviarAAmbos({ type: 'UPDATE_STATE', state: state });
+    enviarAAmbos({ type: 'BATTLE_LOG', message: `¡Cambio! Adelante, ${data.persona}.` });
+}
         const message = JSON.parse(data);
 
         if (message.type === 'CHAT_LOBBY') {

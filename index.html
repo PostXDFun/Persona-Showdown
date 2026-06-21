@@ -362,8 +362,11 @@
                 <button class="move-btn ps-button" onclick="enviarAccion('${move.name}', '${move.type}')">
                     ${move.name} <span class="move-type">${move.type}</span> <span class="move-sp">${move.sp}</span>
                 </button>`;
+                
         });
     }
+
+    
 
     function dibujarBarras(state) {
         if (!miRol || !state[miRol]) return;
@@ -383,7 +386,18 @@
         document.getElementById("ui-name-p1").innerText = me.name;
         document.getElementById("ui-hp-num").innerText = `${me.hp}/${me.hpMax}`;
         renderizarAtaques(me.moves);
-
+const switchContainer = document.querySelector('.switch-row');
+    switchContainer.innerHTML = ''; // Limpiamos los botones viejos
+    
+    miEquipo.forEach(persona => {
+        // Solo creamos botón si hay una persona en ese slot y no es la activa
+        if (persona && persona !== me.name) {
+            switchContainer.innerHTML += `
+                <button class="switch-btn ps-button" onclick="enviarSwitch('${persona}')">
+                    ${persona}
+                </button>`;
+        }
+    });
         // Barras de vida
         let pct1 = (me.hp / me.hpMax) * 100;
         document.getElementById("bar-p1").style.width = pct1 + "%";
@@ -424,6 +438,15 @@
             habilitarControles(false);
         }
     }
+    function enviarSwitch(nombrePersona) {
+    if(ws.readyState === WebSocket.OPEN) {
+        // Le enviamos al servidor la orden de cambio
+        ws.send(JSON.stringify({ type: 'SWITCH', persona: nombrePersona }));
+        
+        // Deshabilitamos los botones hasta que el servidor confirme el turno
+        habilitarControles(false);
+    }
+}
 
     document.getElementById('lobby-textfield').addEventListener('keypress', function (e) {
         if (e.key === 'Enter' && this.value.trim() !== '') {
