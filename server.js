@@ -3,7 +3,7 @@ const http = require('http');
 const path = require('path');
 const { WebSocketServer } = require('ws');
 
-const app = report = express();
+const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(express.static(path.join(__dirname, 'public')));
