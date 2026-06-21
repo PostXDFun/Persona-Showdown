@@ -6,16 +6,12 @@ const { WebSocketServer } = require('ws');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Configurar archivos estáticos (aquí es donde están tus sprites en /public/sprites/)
 app.use(express.static(path.join(__dirname, 'public')));
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-// --- AYUDANTE PARA PAUSAS ---
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-// --- LÓGICA DE JUEGO ---
 
 let allClients = [];
 let room = {
@@ -62,6 +58,27 @@ function broadcastLobbyLog(htmlMessage) {
     allClients.forEach(c => { if (c.readyState === c.OPEN) c.send(message); });
 }
 
+// --- FUNCIÓN PARA ACTUALIZAR STATS AL CAMBIAR ---
+function efectuarCambio(jugador, nuevaPersona) {
+    broadcastBattleLog(`<b>¡Adelante, ${nuevaPersona}!</b>`);
+    jugador.name = nuevaPersona;
+    
+    // El servidor necesita saber los stats de las Personas
+    const SERVER_COMPENDIUM = {
+        "Izanagi": { hpMax: 150, weakness: "Wind", moves: [{ name: "Zio", type: "Electric", sp: "4 SP" }, { name: "Cleave", type: "Physical", sp: "10% HP" }] },
+        "Jiraiya": { hpMax: 120, weakness: "Electric", moves: [{ name: "Garu", type: "Wind", sp: "3 SP" }, { name: "Brave Blade", type: "Physical", sp: "20% HP" }] },
+        "Jack Frost": { hpMax: 130, weakness: "Fire", moves: [{ name: "Bufu", type: "Ice", sp: "4 SP" }, { name: "Mabufu", type: "Ice", sp: "10 SP" }] },
+        "Thanatos": { hpMax: 200, weakness: "Light", moves: [{ name: "Megidolaon", type: "Almighty", sp: "30 SP" }, { name: "Maeigaon", type: "Curse", sp: "22 SP" }] }
+    };
+
+    if (SERVER_COMPENDIUM[nuevaPersona]) {
+        jugador.hpMax = SERVER_COMPENDIUM[nuevaPersona].hpMax;
+        jugador.hp = SERVER_COMPENDIUM[nuevaPersona].hpMax; // Nota: Cura al cambiar (se puede mejorar después)
+        jugador.weakness = SERVER_COMPENDIUM[nuevaPersona].weakness;
+        jugador.moves = SERVER_COMPENDIUM[nuevaPersona].moves;
+    }
+}
+
 function ejecutarAtaque(atacante, defensor, accion) {
     if (atacante.hp <= 0) return; 
     broadcastBattleLog(`<b>${atacante.name}</b> used <b>${accion.skill}</b>!`);
@@ -79,18 +96,29 @@ function ejecutarAtaque(atacante, defensor, accion) {
     broadcastBattleLog(`<span class="log-damage">(The opposing ${defensor.name} lost ${damagePercent}% of its health!)</span>`);
 }
 
-// --- FUNCIÓN ASÍNCRONA PARA RESOLVER EL TURNO CON PAUSAS ---
 async function resolverTurno() {
     broadcastBattleLog(`<div class="log-turn">Turn ${room.turnCount}</div>`);
-    await sleep(1000); // Pausa antes del primer movimiento
+    await sleep(1000); 
 
-    // Ataque 1
-    ejecutarAtaque(room.p1, room.p2, room.p1.action);
-    broadcastState();
-    await sleep(2000); // Pausa tras el impacto del primer movimiento
+    // Fase 1: Cambios (Tienen prioridad sobre los ataques)
+    if (room.p1.action.type === 'SWITCH') {
+        efectuarCambio(room.p1, room.p1.action.persona);
+        broadcastState();
+        await sleep(1500);
+    }
+    if (room.p2.action.type === 'SWITCH') {
+        efectuarCambio(room.p2, room.p2.action.persona);
+        broadcastState();
+        await sleep(1500);
+    }
 
-    // Ataque 2 (Solo si el oponente sigue vivo)
-    if (room.p2.hp > 0) {
+    // Fase 2: Ataques
+    if (room.p1.action.type === 'ACTION' && room.p1.hp > 0) {
+        ejecutarAtaque(room.p1, room.p2, room.p1.action);
+        broadcastState();
+        await sleep(2000); 
+    }
+    if (room.p2.action.type === 'ACTION' && room.p2.hp > 0) {
         ejecutarAtaque(room.p2, room.p1, room.p2.action);
         broadcastState();
         await sleep(1000);
@@ -109,33 +137,11 @@ function resetearSala() {
     room.p2.action = null;
 }
 
-// --- CONEXIONES WEBSOCKET ---
-
 wss.on('connection', (ws) => {
     allClients.push(ws);
     ws.send(JSON.stringify({ type: 'LOBBY_LOG', message: '<span style="color: cyan;">Conectado al servidor central. Presiona "Battle!" para buscar partida.</span>' }));
 
     ws.on('message', (data) => {
-        // En tu server.js, dentro del ws.on('message')
-// Dentro de tu ws.on('message') en el backend:
-
-if (data.type === 'SWITCH') {
-    // 1. Identificas qué jugador lo pidió (p1 o p2)
-    const rol = (ws === jugador1_ws) ? 'p1' : 'p2'; // Ajusta esto según cómo guardes las sesiones
-    
-    // 2. Registras que su "acción" de este turno es cambiar de Persona
-    state[rol].action = { type: 'switch', target: data.persona };
-    
-    // 3. Informas en el chat (opcional, para feedback)
-    enviarAAmbos({ 
-        type: 'BATTLE_LOG', 
-        message: `El jugador eligió cambiar a ${data.persona}...` 
-    });
-
-    // 4. Chequeas si ambos jugadores ya mandaron su acción para resolver el turno
-    // (Llama a la misma función que usas cuando ambos eligen un ataque)
-    resolverTurnoSiEstanListos(); 
-}
         const message = JSON.parse(data);
 
         if (message.type === 'CHAT_LOBBY') {
@@ -165,15 +171,19 @@ if (data.type === 'SWITCH') {
                 broadcastState();
             }
         }
-        else if (message.type === 'ACTION' && room.status === 'PLAYING') {
+        // Atrapamos tanto ACTION como SWITCH
+        else if ((message.type === 'ACTION' || message.type === 'SWITCH') && room.status === 'PLAYING') {
+            const accionTexto = message.type === 'SWITCH' ? `cambiar a ${message.persona}` : `usar ${message.skill}`;
+            
             if (ws === room.p1.ws) {
                 room.p1.action = message;
-                ws.send(JSON.stringify({ type: 'BATTLE_LOG', message: `<span style="color: #aaa;">Has elegido ${message.skill}. Esperando al oponente...</span>` }));
+                ws.send(JSON.stringify({ type: 'BATTLE_LOG', message: `<span style="color: #aaa;">Has decidido ${accionTexto}. Esperando al oponente...</span>` }));
             } else if (ws === room.p2.ws) {
                 room.p2.action = message;
-                ws.send(JSON.stringify({ type: 'BATTLE_LOG', message: `<span style="color: #aaa;">Has elegido ${message.skill}. Esperando al oponente...</span>` }));
+                ws.send(JSON.stringify({ type: 'BATTLE_LOG', message: `<span style="color: #aaa;">Has decidido ${accionTexto}. Esperando al oponente...</span>` }));
             }
 
+            // Si ambos jugadores enviaron su movimiento, resolvemos
             if (room.p1.action !== null && room.p2.action !== null) {
                 resolverTurno();
             }
