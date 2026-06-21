@@ -307,17 +307,9 @@
 
     </div>
 
-    <script>
-        // Función principal de navegación
-        function cambiarTab(pantallaId) {
-            console.log("Cambiando pestaña a:", pantallaId);
-            document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            
-            document.getElementById(`pantalla-${pantallaId}`).classList.add('active');
-            document.getElementById(`tab-btn-${pantallaId}`).classList.add('active');
-        }
-const COMPENDIUM = [
+<script>
+    // --- VARIABLES GLOBALES ---
+    const COMPENDIUM = [
         { name: "Izanagi", type: "Electric" },
         { name: "Jiraiya", type: "Wind" },
         { name: "Jack Frost", type: "Ice" },
@@ -325,151 +317,127 @@ const COMPENDIUM = [
         { name: "Arsene", type: "Curse" },
         { name: "Apollo", type: "Fire" }
     ];
-
     let miEquipo = [null, null, null];
 
-    // Función principal de navegación
+    // --- CONFIGURACIÓN WEBSOCKET ---
+    const SERVER_URL = 'wss://persona-showdown-production.up.railway.app';
+    const ws = new WebSocket(SERVER_URL);
+    let miRol = null;
+
+    // --- FUNCIONES AUXILIARES ---
     function cambiarTab(pantallaId) {
-        // ... (tu código actual)
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`pantalla-${pantallaId}`).classList.add('active');
+        document.getElementById(`tab-btn-${pantallaId}`).classList.add('active');
     }
-        const SERVER_URL = 'wss://persona-showdown-production.up.railway.app';
-        const ws = new WebSocket(SERVER_URL);
-        let miRol = null;
 
-        // Evento del botón Battle!
-        document.getElementById('btn-find-battle').addEventListener('click', () => {
-            document.getElementById('tab-btn-batalla').style.display = 'inline-block';
-            cambiarTab('batalla');
-            if(ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: 'SEARCH_MATCH' }));
-            }
+    function getSpritePath(name) {
+        const fileName = name.toLowerCase().replace(/\s+/g, '-');
+        return `/public/sprites/${fileName}.png`;
+    }
+
+    function habilitarControles(habilitar) {
+        const botones = document.querySelectorAll('.move-btn, .switch-btn');
+        botones.forEach(btn => btn.disabled = !habilitar);
+    }
+
+    function escribirLogBatalla(mensaje) {
+        const log = document.getElementById("log-content");
+        log.innerHTML += `<div>${mensaje}</div>`;
+        log.scrollTop = log.scrollHeight;
+    }
+
+    function escribirLogLobby(mensaje) {
+        const lobbyLog = document.getElementById("lobby-chat-content");
+        lobbyLog.innerHTML += `<div>${mensaje}</div>`;
+        lobbyLog.scrollTop = lobbyLog.scrollHeight;
+    }
+
+    function renderizarAtaques(moves) {
+        const grid = document.querySelector('.moves-grid');
+        grid.innerHTML = ''; 
+        moves.forEach(move => {
+            grid.innerHTML += `
+                <button class="move-btn ps-button" onclick="enviarAccion('${move.name}', '${move.type}')">
+                    ${move.name} <span class="move-type">${move.type}</span> <span class="move-sp">${move.sp}</span>
+                </button>`;
         });
-
-        function habilitarControles(habilitar) {
-            const botones = document.querySelectorAll('.move-btn, .switch-btn');
-            botones.forEach(btn => btn.disabled = !habilitar);
-        }
-        habilitarControles(false);
-
-        function escribirLogBatalla(mensaje) {
-            const log = document.getElementById("log-content");
-            log.innerHTML += `<div>${mensaje}</div>`;
-            log.scrollTop = log.scrollHeight;
-        }
-
-        function escribirLogLobby(mensaje) {
-            const lobbyLog = document.getElementById("lobby-chat-content");
-            lobbyLog.innerHTML += `<div>${mensaje}</div>`;
-            lobbyLog.scrollTop = lobbyLog.scrollHeight;
-        }
-
-        function renderizarAtaques(moves) {
-            const grid = document.querySelector('.moves-grid');
-            grid.innerHTML = ''; 
-            moves.forEach(move => {
-                grid.innerHTML += `
-                    <button class="move-btn ps-button" onclick="enviarAccion('${move.name}', '${move.type}')">
-                        ${move.name} <span class="move-type">${move.type}</span> <span class="move-sp">${move.sp}</span>
-                    </button>
-                `;
-            });
-        }
+    }
 
     function dibujarBarras(state) {
-    if (!miRol || !state[miRol]) return;
+        if (!miRol || !state[miRol]) return;
 
-    const me = state[miRol];
-    const enemy = (miRol === 'p1') ? state.p2 : state.p1;
+        const me = state[miRol];
+        const enemy = (miRol === 'p1') ? state.p2 : state.p1;
 
-    // Control de botones
-    if (state.status === 'WAITING') habilitarControles(false);
-    else if (state.status === 'PLAYING') habilitarControles(true);
+        if (state.status === 'WAITING') habilitarControles(false);
+        else if (state.status === 'PLAYING') habilitarControles(true);
 
-    // --- AQUÍ VA LA ASIGNACIÓN CON LA FUNCIÓN NUEVA ---
-    document.getElementById("name-p1").innerText = me.name;
-    document.getElementById("sprite-p1").src = getSpritePath(me.name); // <--- AQUÍ
-    
-    document.getElementById("name-opp").innerText = enemy.name;
-    document.getElementById("sprite-opp").src = getSpritePath(enemy.name); // <--- AQUÍ
-    // --------------------------------------------------
+        // Actualizar nombres y sprites
+        document.getElementById("name-p1").innerText = me.name;
+        document.getElementById("sprite-p1").src = getSpritePath(me.name);
+        document.getElementById("name-opp").innerText = enemy.name;
+        document.getElementById("sprite-opp").src = getSpritePath(enemy.name);
 
-    document.getElementById("ui-name-p1").innerText = me.name;
-    document.getElementById("ui-hp-num").innerText = `${me.hp}/${me.hpMax}`;
-    renderizarAtaques(me.moves);
+        document.getElementById("ui-name-p1").innerText = me.name;
+        document.getElementById("ui-hp-num").innerText = `${me.hp}/${me.hpMax}`;
+        renderizarAtaques(me.moves);
 
-    // Barras de Vida
-    let pct1 = (me.hp / me.hpMax) * 100;
-    document.getElementById("bar-p1").style.width = pct1 + "%";
-    document.getElementById("porcentaje-p1").innerText = Math.ceil(pct1) + "%";
-    document.getElementById("bar-p1").style.background = pct1 < 25 ? "#ff4444" : (pct1 < 50 ? "#ffdd55" : "#48c774");
+        // Barras de vida
+        let pct1 = (me.hp / me.hpMax) * 100;
+        document.getElementById("bar-p1").style.width = pct1 + "%";
+        document.getElementById("porcentaje-p1").innerText = Math.ceil(pct1) + "%";
+        document.getElementById("bar-p1").style.background = pct1 < 25 ? "#ff4444" : (pct1 < 50 ? "#ffdd55" : "#48c774");
 
-    let pct2 = (enemy.hp / enemy.hpMax) * 100;
-    document.getElementById("bar-opp").style.width = pct2 + "%";
-    document.getElementById("porcentaje-opp").innerText = Math.ceil(pct2) + "%";
-    document.getElementById("bar-opp").style.background = pct2 < 25 ? "#ff4444" : (pct2 < 50 ? "#ffdd55" : "#48c774");
+        let pct2 = (enemy.hp / enemy.hpMax) * 100;
+        document.getElementById("bar-opp").style.width = pct2 + "%";
+        document.getElementById("porcentaje-opp").innerText = Math.ceil(pct2) + "%";
+        document.getElementById("bar-opp").style.background = pct2 < 25 ? "#ff4444" : (pct2 < 50 ? "#ffdd55" : "#48c774");
 
-    document.getElementById("ui-turn").innerText = state.turnCount;
-}
+        document.getElementById("ui-turn").innerText = state.turnCount;
+        habilitarControles(state.status === 'PLAYING');
+    }
 
-    // Renderizar Ataques (Solo para ti)
-    renderizarAtaques(me.moves);
+    // --- EVENTOS ---
+    document.getElementById('btn-find-battle').addEventListener('click', () => {
+        document.getElementById('tab-btn-batalla').style.display = 'inline-block';
+        cambiarTab('batalla');
+        if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'SEARCH_MATCH' }));
+    });
 
-    // 4. Barras de Vida (Lógica de colores y porcentajes)
-    // Mi barra
-    let pct1 = (me.hp / me.hpMax) * 100;
-    document.getElementById("bar-p1").style.width = pct1 + "%";
-    document.getElementById("porcentaje-p1").innerText = Math.ceil(pct1) + "%";
-    document.getElementById("bar-p1").style.background = pct1 < 25 ? "#ff4444" : (pct1 < 50 ? "#ffdd55" : "#48c774");
+    ws.onopen = () => escribirLogLobby(`<div style="color: #48c774; text-align: center; margin-top: 20px;">Connected to server. Ready to battle.</div>`);
 
-    // Barra del Rival
-    let pct2 = (enemy.hp / enemy.hpMax) * 100;
-    document.getElementById("bar-opp").style.width = pct2 + "%";
-    document.getElementById("porcentaje-opp").innerText = Math.ceil(pct2) + "%";
-    document.getElementById("bar-opp").style.background = pct2 < 25 ? "#ff4444" : (pct2 < 50 ? "#ffdd55" : "#48c774");
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'INIT') {
+            document.getElementById('status-message').innerHTML = data.message;
+            miRol = data.role; 
+        } else if (data.type === 'BATTLE_LOG') escribirLogBatalla(data.message);
+        else if (data.type === 'LOBBY_LOG') escribirLogLobby(data.message);
+        else if (data.type === 'UPDATE_STATE') dibujarBarras(data.state);
+    };
 
-    document.getElementById("ui-turn").innerText = state.turnCount;
-    habilitarControles(state.status === 'PLAYING'); 
-
-        ws.onopen = () => {
-            escribirLogLobby(`<div style="color: #48c774; text-align: center; margin-top: 20px;">Connected to server. Ready to battle.</div>`);
-        };
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'INIT') {
-                document.getElementById('status-message').innerHTML = data.message;
-                miRol = data.role; 
-            }
-            else if (data.type === 'BATTLE_LOG') escribirLogBatalla(data.message);
-            else if (data.type === 'LOBBY_LOG') escribirLogLobby(data.message);
-            else if (data.type === 'UPDATE_STATE') dibujarBarras(data.state);
-            // Pon esta función junto a tus otras funciones helper
-function getSpritePath(name) {
-    const fileName = name.toLowerCase().replace(/\s+/g, '-');
-    return `/public/sprites/${fileName}.png`;
-}
-        };
-
-        function enviarAccion(nombreAtaque, tipoAtaque) {
-            if(ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: 'ACTION', skill: nombreAtaque, skillType: tipoAtaque }));
-                habilitarControles(false);
-            }
+    function enviarAccion(nombreAtaque, tipoAtaque) {
+        if(ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'ACTION', skill: nombreAtaque, skillType: tipoAtaque }));
+            habilitarControles(false);
         }
+    }
 
-        document.getElementById('lobby-textfield').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter' && this.value.trim() !== '') {
-                if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'CHAT_LOBBY', text: this.value }));
-                this.value = ''; 
-            }
-        });
+    document.getElementById('lobby-textfield').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter' && this.value.trim() !== '') {
+            if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'CHAT_LOBBY', text: this.value }));
+            this.value = '';
+        }
+    });
 
-        document.getElementById('chat-textfield').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter' && this.value.trim() !== '') {
-                if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'CHAT_BATTLE', text: this.value }));
-                this.value = ''; 
-            }
-        });
-    </script>
+    document.getElementById('chat-textfield').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter' && this.value.trim() !== '') {
+            if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'CHAT_BATTLE', text: this.value }));
+            this.value = '';
+        }
+    });
+</script>
 </body>
 </html>
