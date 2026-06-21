@@ -117,19 +117,24 @@ wss.on('connection', (ws) => {
 
     ws.on('message', (data) => {
         // En tu server.js, dentro del ws.on('message')
+// Dentro de tu ws.on('message') en el backend:
+
 if (data.type === 'SWITCH') {
-    const jugador = state[miRol]; // p1 o p2
+    // 1. Identificas qué jugador lo pidió (p1 o p2)
+    const rol = (ws === jugador1_ws) ? 'p1' : 'p2'; // Ajusta esto según cómo guardes las sesiones
     
-    // 1. Cambias el nombre activo
-    jugador.name = data.persona;
+    // 2. Registras que su "acción" de este turno es cambiar de Persona
+    state[rol].action = { type: 'switch', target: data.persona };
     
-    // 2. Actualizas sus stats/ataques (aquí buscarías en tu COMPENDIUM del servidor)
-    // jugador.hp = ...
-    // jugador.moves = ...
-    
-    // 3. Envías el nuevo estado a ambos jugadores
-    enviarAAmbos({ type: 'UPDATE_STATE', state: state });
-    enviarAAmbos({ type: 'BATTLE_LOG', message: `¡Cambio! Adelante, ${data.persona}.` });
+    // 3. Informas en el chat (opcional, para feedback)
+    enviarAAmbos({ 
+        type: 'BATTLE_LOG', 
+        message: `El jugador eligió cambiar a ${data.persona}...` 
+    });
+
+    // 4. Chequeas si ambos jugadores ya mandaron su acción para resolver el turno
+    // (Llama a la misma función que usas cuando ambos eligen un ataque)
+    resolverTurnoSiEstanListos(); 
 }
         const message = JSON.parse(data);
 
