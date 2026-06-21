@@ -110,7 +110,12 @@ function ejecutarAtaque(atacante, defensor, accion) {
     broadcastBattleLog(`<span class="log-damage">(The opposing ${defensor.name} lost ${damagePercent}% of its health!)</span>`);
 }
 
+// --- RESOLVER EL TURNO CON CONTROL DE ESTADOS ---
 async function resolverTurno() {
+    // 1. Bloqueamos las acciones en los clientes cambiando a RESOLVING
+    room.status = 'RESOLVING'; 
+    broadcastState(); // Avisamos de inmediato a las pantallas para apagar controles
+
     broadcastBattleLog(`<div class="log-turn">Turn ${room.turnCount}</div>`);
     await sleep(1000); 
 
@@ -138,9 +143,24 @@ async function resolverTurno() {
         await sleep(1000);
     }
 
+    // Fase 3: Verificar KO / Fin del Combate
+    if (room.p1.hp <= 0 || room.p2.hp <= 0) {
+        const ganador = room.p1.hp > 0 ? "Player 1" : "Player 2";
+        broadcastBattleLog(`<div class="log-turn" style="color: #ffd700;">¡${ganador} se lleva la victoria! La batalla ha terminado.</div>`);
+        
+        room.status = 'FINISHED';
+        broadcastState();
+        return; 
+    }
+
+    // 2. Limpieza segura: Reseteamos acciones al terminar de calcular todo el turno
     room.p1.action = null;
     room.p2.action = null;
     room.turnCount++;
+    
+    // 3. Devolvemos el control abriendo los controles de nuevo
+    room.status = 'PLAYING'; 
+    broadcastState();
 }
 
 function resetearSala() {
@@ -150,7 +170,6 @@ function resetearSala() {
     room.p1.action = null;
     room.p2.action = null;
     
-    // Limpiamos la mochila para la nueva batalla
     room.p1.teamState = {}; 
     room.p2.teamState = {};
 }
@@ -190,7 +209,7 @@ wss.on('connection', (ws) => {
                 broadcastState();
             }
         }
-        // Atrapamos tanto ACTION como SWITCH
+        // Solo aceptamos comandos si el estado global de la sala es 'PLAYING'
         else if ((message.type === 'ACTION' || message.type === 'SWITCH') && room.status === 'PLAYING') {
             const accionTexto = message.type === 'SWITCH' ? `cambiar a ${message.persona}` : `usar ${message.skill}`;
             
@@ -202,7 +221,6 @@ wss.on('connection', (ws) => {
                 ws.send(JSON.stringify({ type: 'BATTLE_LOG', message: `<span style="color: #aaa;">Has decidido ${accionTexto}. Esperando al oponente...</span>` }));
             }
 
-            // Si ambos jugadores enviaron su movimiento, resolvemos
             if (room.p1.action !== null && room.p2.action !== null) {
                 resolverTurno();
             }
