@@ -429,7 +429,6 @@ const COMPENDIUM = [
 
     document.getElementById("ui-turn").innerText = state.turnCount;
     habilitarControles(state.status === 'PLAYING'); 
-}
 
         ws.onopen = () => {
             escribirLogLobby(`<div style="color: #48c774; text-align: center; margin-top: 20px;">Connected to server. Ready to battle.</div>`);
